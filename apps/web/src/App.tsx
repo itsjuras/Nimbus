@@ -12,6 +12,7 @@ const AcceptInvitePage = lazy(() => import('./pages/AcceptInvitePage'))
 const OwnerDashboard = lazy(() => import('./pages/owner/DashboardPage'))
 const JobsPage = lazy(() => import('./pages/owner/JobsPage'))
 const ClientsPage = lazy(() => import('./pages/owner/ClientsPage'))
+const ClientDetailPage = lazy(() => import('./pages/owner/ClientDetailPage'))
 const CrewPage = lazy(() => import('./pages/owner/CrewPage'))
 
 // Crew pages (stubbed — filled in during later steps)
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="/owner/dashboard" element={<OwnerDashboard />} />
             <Route path="/owner/jobs" element={<JobsPage />} />
             <Route path="/owner/clients" element={<ClientsPage />} />
+            <Route path="/owner/clients/:id" element={<ClientDetailPage />} />
             <Route path="/owner/crew" element={<CrewPage />} />
           </Route>
         </Route>

@@ -1,5 +1,7 @@
 import express from 'express'
 import { authRouter } from './routes/auth.js'
+import { clientsRouter } from './routes/clients.js'
+import { checklistsRouter } from './routes/checklists.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
@@ -12,6 +14,8 @@ app.get('/health', (_req, res) => {
 })
 
 app.use('/api/v1', authRouter)
+app.use('/api/v1/clients', clientsRouter)
+app.use('/api/v1/checklists', checklistsRouter)
 
 app.use(errorHandler)
 
