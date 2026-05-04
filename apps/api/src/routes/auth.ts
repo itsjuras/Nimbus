@@ -3,7 +3,7 @@ import { SignUpSchema, InviteCrewSchema } from '@nimbus/shared'
 import { validate } from '../middleware/validate.js'
 import { requireAuth, requireRole } from '../middleware/requireAuth.js'
 import { signUpOwner, inviteCrew } from '../services/authService.js'
-import { getProfileById } from '../db/queries/profiles.js'
+import { getProfileById, getProfilesByCompany } from '../db/queries/profiles.js'
 
 export const authRouter: ExpressRouter = Router()
 
@@ -17,6 +17,17 @@ authRouter.get('/auth/me', requireAuth, async (req, res, next) => {
       return
     }
     res.json(profile)
+  } catch (err) {
+    next(err)
+  }
+})
+
+// GET /api/v1/crew
+// Lists all profiles in the company
+authRouter.get('/crew', requireAuth, async (req, res, next) => {
+  try {
+    const profiles = await getProfilesByCompany(req.user.companyId)
+    res.json(profiles)
   } catch (err) {
     next(err)
   }
