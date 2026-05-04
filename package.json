@@ -1,0 +1,16 @@
+{
+  "name": "nimbus",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "concurrently --names api,web --prefix-colors blue,green \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
+    "build": "pnpm --filter @nimbus/shared build && pnpm --filter api build && pnpm --filter web build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "typescript": "^5.5.0"
+  }
+}
