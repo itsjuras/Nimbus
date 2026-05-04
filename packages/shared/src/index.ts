@@ -7,6 +7,9 @@ export type { CreateClientRequest, UpdateClientRequest, ReplaceChecklistRequest,
 export { CreateJobSchema, UpdateJobSchema, JobFiltersSchema } from './schemas/jobs.js'
 export type { CreateJobRequest, UpdateJobRequest, JobFilters } from './schemas/jobs.js'
 
+export { MarkItemCompleteSchema, RegisterPhotoSchema } from './schemas/jobActions.js'
+export type { MarkItemCompleteRequest, RegisterPhotoRequest } from './schemas/jobActions.js'
+
 export type { Company } from './types/company.js'
 export type { UserRole, Profile } from './types/profile.js'
 export type { Client } from './types/client.js'

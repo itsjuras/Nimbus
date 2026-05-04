@@ -1,5 +1,5 @@
 import { Router, type Router as ExpressRouter } from 'express'
-import { CreateJobSchema, UpdateJobSchema, JobFiltersSchema } from '@nimbus/shared'
+import { CreateJobSchema, UpdateJobSchema, JobFiltersSchema, MarkItemCompleteSchema, RegisterPhotoSchema } from '@nimbus/shared'
 import { requireAuth, requireRole } from '../middleware/requireAuth.js'
 import { validate } from '../middleware/validate.js'
 import {
@@ -10,6 +10,11 @@ import {
   deleteJob,
   startJob,
 } from '../services/jobService.js'
+import {
+  markItemComplete,
+  registerPhoto,
+  completeJob,
+} from '../services/jobCompletionService.js'
 
 export const jobsRouter: ExpressRouter = Router()
 
@@ -80,7 +85,7 @@ jobsRouter.delete('/:id', requireRole('owner', 'manager'), async (req, res, next
   }
 })
 
-// POST /api/v1/jobs/:id/start — crew action
+// POST /api/v1/jobs/:id/start
 jobsRouter.post('/:id/start', async (req, res, next) => {
   try {
     const job = await startJob(String(req.params['id']), req.user.companyId)
@@ -90,7 +95,56 @@ jobsRouter.post('/:id/start', async (req, res, next) => {
   }
 })
 
-// POST /api/v1/jobs/:id/complete — implemented fully in step 6
-jobsRouter.post('/:id/complete', async (_req, res) => {
-  res.status(501).json({ error: { code: 'NOT_IMPLEMENTED', message: 'Coming in step 6' } })
+// PATCH /api/v1/jobs/:id/checklist-items
+jobsRouter.patch(
+  '/:id/checklist-items',
+  validate(MarkItemCompleteSchema),
+  async (req, res, next) => {
+    try {
+      const item = await markItemComplete(
+        String(req.params['id']),
+        req.user.companyId,
+        req.user.id,
+        req.body.checklistItemId,
+        req.body.completed,
+      )
+      res.json(item)
+    } catch (err) {
+      next(err)
+    }
+  },
+)
+
+// POST /api/v1/jobs/:id/photos
+jobsRouter.post(
+  '/:id/photos',
+  validate(RegisterPhotoSchema),
+  async (req, res, next) => {
+    try {
+      const photo = await registerPhoto(
+        String(req.params['id']),
+        req.user.companyId,
+        req.user.id,
+        req.body.checklistItemId,
+        req.body.storagePath,
+      )
+      res.status(201).json(photo)
+    } catch (err) {
+      next(err)
+    }
+  },
+)
+
+// POST /api/v1/jobs/:id/complete
+jobsRouter.post('/:id/complete', async (req, res, next) => {
+  try {
+    const job = await completeJob(
+      String(req.params['id']),
+      req.user.companyId,
+      req.user.id,
+    )
+    res.json(job)
+  } catch (err) {
+    next(err)
+  }
 })

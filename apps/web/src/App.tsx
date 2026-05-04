@@ -16,8 +16,9 @@ const ClientsPage = lazy(() => import('./pages/owner/ClientsPage'))
 const ClientDetailPage = lazy(() => import('./pages/owner/ClientDetailPage'))
 const CrewPage = lazy(() => import('./pages/owner/CrewPage'))
 
-// Crew pages (stubbed — filled in during later steps)
+// Crew pages
 const CrewJobsPage = lazy(() => import('./pages/crew/JobsPage'))
+const CrewChecklistPage = lazy(() => import('./pages/crew/ChecklistPage'))
 
 const Spinner = () => (
   <div className="flex h-screen items-center justify-center">
@@ -50,6 +51,7 @@ export default function App() {
         <Route element={<ProtectedRoute allowedRoles={['crew', 'manager', 'owner']} />}>
           <Route element={<CrewLayout />}>
             <Route path="/crew/jobs" element={<CrewJobsPage />} />
+            <Route path="/crew/jobs/:id" element={<CrewChecklistPage />} />
           </Route>
         </Route>
 
