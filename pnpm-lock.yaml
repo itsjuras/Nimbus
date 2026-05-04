@@ -45,6 +45,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@hookform/resolvers':
+        specifier: ^3.9.0
+        version: 3.10.0(react-hook-form@7.75.0(react@18.3.1))
       '@nimbus/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -96,6 +99,10 @@ importers:
         version: 5.4.21(@types/node@22.19.17)
 
   packages/shared:
+    dependencies:
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
     devDependencies:
       typescript:
         specifier: ^5.5.0
@@ -483,6 +490,11 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@hookform/resolvers@3.10.0':
+    resolution: {integrity: sha512-79Dv+3mDF7i+2ajj7SkypSKHhl1cbln1OGavqrsF7p6mbUv11xpqpacPsGDCTRvCSjEEIez2ef1NveSVL3b0Ag==}
+    peerDependencies:
+      react-hook-form: ^7.0.0
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1824,6 +1836,10 @@ snapshots:
 
   '@esbuild/win32-x64@0.27.7':
     optional: true
+
+  '@hookform/resolvers@3.10.0(react-hook-form@7.75.0(react@18.3.1))':
+    dependencies:
+      react-hook-form: 7.75.0(react@18.3.1)
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
