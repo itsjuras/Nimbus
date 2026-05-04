@@ -6,6 +6,7 @@ import {
   getChecklistCompletionStatus,
 } from '../db/queries/jobChecklist.js'
 import { AppError } from '../middleware/errorHandler.js'
+import { sendCompletionReport } from './reportService.js'
 import type { Job, JobChecklistItem, JobPhoto } from '@nimbus/shared'
 
 export async function markItemComplete(
@@ -75,6 +76,11 @@ export async function completeJob(
   await supabase.from('job_completions').insert({
     job_id: jobId,
     completed_by: profileId,
+  })
+
+  // Send client report asynchronously — don't block the response on email delivery
+  sendCompletionReport(jobId, companyId).catch((err) => {
+    console.error(`[report] Unhandled error sending report for job ${jobId}:`, err)
   })
 
   return updated

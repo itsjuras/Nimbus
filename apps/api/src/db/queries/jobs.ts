@@ -62,7 +62,7 @@ export async function getJobDetail(id: string, companyId: string): Promise<JobDe
   // Fetch all related data in parallel
   const [clientRes, checklistRes, crewRes, checklistItemsRes, photosRes, completionRes] =
     await Promise.all([
-      supabase.from('clients').select('name').eq('id', jobRow['client_id']).single(),
+      supabase.from('clients').select('name, contact_email').eq('id', jobRow['client_id']).single(),
       supabase.from('checklists').select('name').eq('id', jobRow['checklist_id']).single(),
       supabase
         .from('job_crew')
@@ -118,6 +118,7 @@ export async function getJobDetail(id: string, companyId: string): Promise<JobDe
   return {
     ...toJob(jobRow),
     clientName: (clientRes.data as Record<string, unknown> | null)?.['name'] as string ?? '',
+    clientContactEmail: (clientRes.data as Record<string, unknown> | null)?.['contact_email'] as string | null ?? null,
     checklistName: (checklistRes.data as Record<string, unknown> | null)?.['name'] as string ?? '',
     crew,
     checklistItems,

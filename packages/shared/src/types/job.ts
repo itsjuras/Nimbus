@@ -58,6 +58,7 @@ export interface JobChecklistItemDetail {
 
 export interface JobDetail extends Job {
   clientName: string
+  clientContactEmail: string | null
   checklistName: string
   crew: JobCrewMember[]
   checklistItems: JobChecklistItemDetail[]
