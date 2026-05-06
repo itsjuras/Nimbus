@@ -6,6 +6,7 @@ const navItems = [
   { to: '/owner/jobs', label: 'Jobs' },
   { to: '/owner/clients', label: 'Clients' },
   { to: '/owner/crew', label: 'Crew' },
+  { to: '/owner/invoices', label: 'Invoices' },
 ]
 
 export function OwnerLayout() {

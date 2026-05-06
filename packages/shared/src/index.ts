@@ -10,6 +10,11 @@ export type { CreateJobRequest, UpdateJobRequest, JobFilters } from './schemas/j
 export { MarkItemCompleteSchema, RegisterPhotoSchema } from './schemas/jobActions.js'
 export type { MarkItemCompleteRequest, RegisterPhotoRequest } from './schemas/jobActions.js'
 
+export { CreateInvoiceSchema, InvoiceLineItemInputSchema } from './schemas/invoices.js'
+export type { CreateInvoiceRequest, InvoiceLineItemInput } from './schemas/invoices.js'
+
+export type { Invoice, InvoiceLineItem, InvoiceStatus } from './types/invoice.js'
+
 export type { Company } from './types/company.js'
 export type { UserRole, Profile } from './types/profile.js'
 export type { Client } from './types/client.js'

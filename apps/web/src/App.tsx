@@ -15,6 +15,7 @@ const JobDetailPage = lazy(() => import('./pages/owner/JobDetailPage'))
 const ClientsPage = lazy(() => import('./pages/owner/ClientsPage'))
 const ClientDetailPage = lazy(() => import('./pages/owner/ClientDetailPage'))
 const CrewPage = lazy(() => import('./pages/owner/CrewPage'))
+const InvoicesPage = lazy(() => import('./pages/owner/InvoicesPage'))
 
 // Crew pages
 const CrewJobsPage = lazy(() => import('./pages/crew/JobsPage'))
@@ -44,6 +45,7 @@ export default function App() {
             <Route path="/owner/clients" element={<ClientsPage />} />
             <Route path="/owner/clients/:id" element={<ClientDetailPage />} />
             <Route path="/owner/crew" element={<CrewPage />} />
+            <Route path="/owner/invoices" element={<InvoicesPage />} />
           </Route>
         </Route>
 

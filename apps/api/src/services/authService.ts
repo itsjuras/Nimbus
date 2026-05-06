@@ -32,7 +32,7 @@ export async function signUpOwner(data: SignUpRequest): Promise<SignUpResult> {
       .single()
 
     if (companyError || !company) {
-      throw new AppError('SIGNUP_FAILED', 'Failed to create company', 500)
+      throw new AppError('SIGNUP_FAILED', companyError?.message ?? 'Failed to create company', 500)
     }
 
     const companyId = (company as Record<string, unknown>)['id'] as string
