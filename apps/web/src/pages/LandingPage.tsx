@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { useRef } from 'react'
+import { useTheme } from '../hooks/useTheme'
 
 export default function LandingPage() {
+  const { theme, toggle } = useTheme()
   const productRef = useRef<HTMLElement>(null)
   const dashboardRef = useRef<HTMLElement>(null)
   const aboutRef = useRef<HTMLElement>(null)
@@ -12,96 +14,115 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/90">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <span className="text-xl font-bold tracking-tight">Nimbus</span>
 
           <nav className="hidden items-center gap-8 md:flex">
-            <button onClick={() => scrollTo(productRef)} className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-              Product
-            </button>
-            <button onClick={() => scrollTo(dashboardRef)} className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-              Dashboard
-            </button>
-            <button onClick={() => scrollTo(aboutRef)} className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-              About
-            </button>
-            <button onClick={() => scrollTo(supportRef)} className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-              Support
-            </button>
+            {[
+              { label: 'Product', ref: productRef },
+              { label: 'Dashboard', ref: dashboardRef },
+              { label: 'About', ref: aboutRef },
+              { label: 'Support', ref: supportRef },
+            ].map(({ label, ref }) => (
+              <button
+                key={label}
+                onClick={() => scrollTo(ref)}
+                className="text-sm text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+              >
+                {label}
+              </button>
+            ))}
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link to="/login" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+            <Link to="/login" className="text-sm text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
               Sign in
             </Link>
             <Link
               to="/signup"
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700 transition-colors"
+              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
             >
               Get started
             </Link>
+
+            {/* Theme toggle — rightmost */}
+            <button
+              onClick={toggle}
+              aria-label="Toggle dark mode"
+              className={`relative flex h-8 w-16 shrink-0 items-center rounded-full transition-colors duration-300 ${
+                theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`absolute flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-500 shadow transition-transform duration-300 ${
+                  theme === 'dark' ? 'translate-x-9' : 'translate-x-1'
+                }`}
+              >
+                {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
+              </span>
+            </button>
           </div>
         </div>
       </header>
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-6xl px-6 pb-24 pt-24 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-medium text-gray-500 mb-8">
-          <span className="h-1.5 w-1.5 rounded-full bg-gray-900" />
+        <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-gray-900 dark:bg-gray-100" />
           Built for commercial cleaning companies
         </div>
 
-        <h1 className="mx-auto max-w-3xl text-5xl font-bold leading-tight tracking-tight text-gray-900 md:text-6xl">
+        <h1 className="mx-auto max-w-3xl text-5xl font-bold leading-tight tracking-tight md:text-6xl">
           Run your cleaning business without the chaos
         </h1>
 
-        <p className="mx-auto mt-6 max-w-xl text-lg text-gray-500 leading-relaxed">
+        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-gray-500 dark:text-gray-400">
           Nimbus replaces the WhatsApp groups, paper checklists, and chasing clients for payment — with one clean tool your whole team actually uses.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
             to="/signup"
-            className="rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-700 transition-colors"
+            className="rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
           >
             Start for free
           </Link>
           <button
             onClick={() => scrollTo(dashboardRef)}
-            className="rounded-lg border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
+            className="rounded-lg border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-400 hover:text-gray-900 dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:text-gray-100"
           >
             See the dashboard →
           </button>
         </div>
 
-        <p className="mt-4 text-xs text-gray-400">No credit card required · Set up in under 5 minutes</p>
+        <p className="mt-4 text-xs text-gray-400 dark:text-gray-600">No credit card required · Set up in under 5 minutes</p>
       </section>
 
       {/* ── Product ────────────────────────────────────────────────────────── */}
-      <section ref={productRef} className="border-t border-gray-100 bg-gray-50 px-6 py-24">
+      <section ref={productRef} className="border-t border-gray-100 bg-gray-50 px-6 py-24 dark:border-gray-800 dark:bg-gray-900">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Product</p>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Product</p>
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
               Everything your team needs, nothing they don't
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-gray-500">
+            <p className="mx-auto mt-4 max-w-xl text-gray-500 dark:text-gray-400">
               From scheduling to client sign-off, Nimbus handles the operational side so you can focus on doing great work.
             </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
-              <div key={f.title} className="rounded-2xl border border-gray-200 bg-white p-6">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-lg">
+              <div key={f.title} className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-lg dark:bg-gray-700">
                   {f.icon}
                 </div>
-                <h3 className="mb-2 font-semibold text-gray-900">{f.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-500">{f.description}</p>
+                <h3 className="mb-2 font-semibold">{f.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">{f.description}</p>
               </div>
             ))}
           </div>
@@ -109,44 +130,48 @@ export default function LandingPage() {
       </section>
 
       {/* ── Dashboard preview ──────────────────────────────────────────────── */}
-      <section ref={dashboardRef} className="border-t border-gray-100 px-6 py-24">
+      <section ref={dashboardRef} className="border-t border-gray-100 px-6 py-24 dark:border-gray-800">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Dashboard</p>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Dashboard</p>
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
               Every job, at a glance
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-gray-500">
-              A live Kanban board shows you exactly where every job stands — scheduled, in progress, completed, or missed — updating in real time as your crew works.
+            <p className="mx-auto mt-4 max-w-xl text-gray-500 dark:text-gray-400">
+              A live Kanban board shows you exactly where every job stands — updating in real time as your crew works.
             </p>
           </div>
 
           {/* Browser mockup */}
-          <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-gray-200 shadow-2xl shadow-gray-200">
+          <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-gray-200 shadow-2xl shadow-gray-200 dark:border-gray-700 dark:shadow-gray-950">
             {/* Browser chrome */}
-            <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3">
+            <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
               <div className="flex gap-1.5">
-                <div className="h-3 w-3 rounded-full bg-gray-200" />
-                <div className="h-3 w-3 rounded-full bg-gray-200" />
-                <div className="h-3 w-3 rounded-full bg-gray-200" />
+                <div className="h-3 w-3 rounded-full bg-gray-200 dark:bg-gray-600" />
+                <div className="h-3 w-3 rounded-full bg-gray-200 dark:bg-gray-600" />
+                <div className="h-3 w-3 rounded-full bg-gray-200 dark:bg-gray-600" />
               </div>
-              <div className="mx-auto flex w-64 items-center gap-2 rounded-md bg-white border border-gray-200 px-3 py-1">
-                <div className="h-2 w-2 rounded-full bg-gray-300" />
-                <span className="text-xs text-gray-400">app.nimbus.ca/owner/dashboard</span>
+              <div className="mx-auto flex w-64 items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 dark:border-gray-600 dark:bg-gray-700">
+                <div className="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-500" />
+                <span className="text-xs text-gray-400 dark:text-gray-500">app.nimbus.ca/owner/dashboard</span>
               </div>
             </div>
 
             {/* Dashboard UI */}
-            <div className="flex bg-white">
+            <div className="flex bg-white dark:bg-gray-900">
               {/* Sidebar */}
-              <div className="w-44 shrink-0 border-r border-gray-100 bg-white py-4">
-                <div className="mb-6 border-b border-gray-100 px-4 pb-4">
-                  <span className="text-sm font-bold text-gray-900">Nimbus</span>
+              <div className="w-44 shrink-0 border-r border-gray-100 bg-white py-4 dark:border-gray-800 dark:bg-gray-900">
+                <div className="mb-6 border-b border-gray-100 px-4 pb-4 dark:border-gray-800">
+                  <span className="text-sm font-bold">Nimbus</span>
                 </div>
                 {['Dashboard', 'Jobs', 'Clients', 'Crew', 'Invoices'].map((item, i) => (
                   <div
                     key={item}
-                    className={`mx-2 mb-0.5 rounded-md px-3 py-2 text-xs font-medium ${i === 0 ? 'bg-gray-100 text-gray-900' : 'text-gray-400'}`}
+                    className={`mx-2 mb-0.5 rounded-md px-3 py-2 text-xs font-medium ${
+                      i === 0
+                        ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
+                        : 'text-gray-400 dark:text-gray-600'
+                    }`}
                   >
                     {item}
                   </div>
@@ -154,33 +179,31 @@ export default function LandingPage() {
               </div>
 
               {/* Main content */}
-              <div className="flex-1 overflow-hidden bg-gray-50 p-5">
-                {/* Top bar */}
-                <div className="mb-4 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 -mx-5 -mt-5 mb-5">
-                  <span className="text-sm font-bold text-gray-900">Dashboard</span>
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 rounded-full bg-gray-900" />
-                    <span className="text-xs text-gray-500">3 jobs active today</span>
+              <div className="flex-1 overflow-hidden bg-gray-50 p-5 dark:bg-gray-950">
+                <div className="-mx-5 -mt-5 mb-5 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
+                  <span className="text-sm font-bold">Dashboard</span>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-gray-900 dark:bg-gray-100" />
+                    <span className="text-xs text-gray-500 dark:text-gray-400">3 jobs active today</span>
                   </div>
                 </div>
 
-                {/* Kanban columns */}
                 <div className="flex gap-3 overflow-hidden">
                   {kanbanColumns.map((col) => (
                     <div key={col.label} className="w-40 shrink-0">
                       <div className="mb-2 flex items-center justify-between">
-                        <span className="text-xs font-semibold text-gray-600">{col.label}</span>
-                        <span className="rounded-full bg-white border border-gray-200 px-1.5 py-0.5 text-xs text-gray-400">{col.cards.length}</span>
+                        <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">{col.label}</span>
+                        <span className="rounded-full border border-gray-200 bg-white px-1.5 py-0.5 text-xs text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500">{col.cards.length}</span>
                       </div>
-                      <div className={`rounded-xl border p-2 ${col.bg} space-y-2 min-h-32`}>
+                      <div className={`min-h-32 space-y-2 rounded-xl border p-2 ${col.bg} ${col.bgDark}`}>
                         {col.cards.map((card) => (
-                          <div key={card.name} className="rounded-lg border border-gray-100 bg-white p-2.5 shadow-sm">
-                            <p className="text-xs font-semibold text-gray-900 leading-tight">{card.name}</p>
-                            <p className="mt-0.5 text-xs text-gray-400">{card.time}</p>
+                          <div key={card.name} className="rounded-lg border border-gray-100 bg-white p-2.5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <p className="text-xs font-semibold leading-tight text-gray-900 dark:text-gray-100">{card.name}</p>
+                            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{card.time}</p>
                             {card.live && (
                               <div className="mt-1.5 flex items-center gap-1">
-                                <span className="h-1.5 w-1.5 rounded-full bg-gray-900 animate-pulse" />
-                                <span className="text-xs text-gray-500">Live</span>
+                                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gray-900 dark:bg-gray-100" />
+                                <span className="text-xs text-gray-500 dark:text-gray-400">Live</span>
                               </div>
                             )}
                           </div>
@@ -196,7 +219,7 @@ export default function LandingPage() {
           <div className="mt-10 text-center">
             <Link
               to="/signup"
-              className="inline-flex rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-700 transition-colors"
+              className="inline-flex rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
             >
               Try it yourself →
             </Link>
@@ -205,30 +228,30 @@ export default function LandingPage() {
       </section>
 
       {/* ── About ──────────────────────────────────────────────────────────── */}
-      <section ref={aboutRef} className="border-t border-gray-100 bg-gray-50 px-6 py-24">
+      <section ref={aboutRef} className="border-t border-gray-100 bg-gray-50 px-6 py-24 dark:border-gray-800 dark:bg-gray-900">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-16 md:grid-cols-2 md:items-center">
             <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">About</p>
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">About</p>
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
                 Built by people who understand the job
               </h2>
-              <p className="mt-5 text-gray-500 leading-relaxed">
+              <p className="mt-5 leading-relaxed text-gray-500 dark:text-gray-400">
                 Commercial cleaning is a trust business. Clients don't just want clean spaces — they want proof. And owners don't just need crew — they need visibility.
               </p>
-              <p className="mt-4 text-gray-500 leading-relaxed">
+              <p className="mt-4 leading-relaxed text-gray-500 dark:text-gray-400">
                 Nimbus was built to give small cleaning companies the same operational clarity that enterprise facilities teams have — without the enterprise price tag or the month-long onboarding.
               </p>
-              <p className="mt-4 text-gray-500 leading-relaxed">
+              <p className="mt-4 leading-relaxed text-gray-500 dark:text-gray-400">
                 We handle the software. You handle the cleaning.
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               {stats.map((s) => (
-                <div key={s.label} className="rounded-2xl border border-gray-200 bg-white p-6">
-                  <p className="text-3xl font-bold text-gray-900">{s.value}</p>
-                  <p className="mt-1 text-sm text-gray-500">{s.label}</p>
+                <div key={s.label} className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                  <p className="text-3xl font-bold">{s.value}</p>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -237,31 +260,28 @@ export default function LandingPage() {
       </section>
 
       {/* ── Support ────────────────────────────────────────────────────────── */}
-      <section ref={supportRef} className="border-t border-gray-100 px-6 py-24">
+      <section ref={supportRef} className="border-t border-gray-100 px-6 py-24 dark:border-gray-800">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Support</p>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Support</p>
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
               We're here when you need us
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-gray-500">
+            <p className="mx-auto mt-4 max-w-xl text-gray-500 dark:text-gray-400">
               Whether you're onboarding your first crew member or troubleshooting a webhook, we respond fast.
             </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
             {supportOptions.map((s) => (
-              <div key={s.title} className="rounded-2xl border border-gray-200 p-6">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-lg">
+              <div key={s.title} className="rounded-2xl border border-gray-200 p-6 dark:border-gray-700">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-lg dark:bg-gray-800">
                   {s.icon}
                 </div>
-                <h3 className="mb-2 font-semibold text-gray-900">{s.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-500">{s.description}</p>
+                <h3 className="mb-2 font-semibold">{s.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">{s.description}</p>
                 {s.action && (
-                  <a
-                    href={s.href}
-                    className="mt-4 inline-block text-sm font-medium text-gray-900 hover:underline"
-                  >
+                  <a href={s.href} className="mt-4 inline-block text-sm font-medium hover:underline">
                     {s.action} →
                   </a>
                 )}
@@ -269,14 +289,13 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* FAQ */}
-          <div className="mt-16 rounded-2xl border border-gray-200 bg-gray-50 p-8">
-            <h3 className="mb-8 text-xl font-bold text-gray-900">Common questions</h3>
+          <div className="mt-16 rounded-2xl border border-gray-200 bg-gray-50 p-8 dark:border-gray-700 dark:bg-gray-900">
+            <h3 className="mb-8 text-xl font-bold">Common questions</h3>
             <div className="grid gap-6 md:grid-cols-2">
               {faqs.map((faq) => (
                 <div key={faq.q}>
-                  <p className="mb-1 font-semibold text-gray-900 text-sm">{faq.q}</p>
-                  <p className="text-sm text-gray-500 leading-relaxed">{faq.a}</p>
+                  <p className="mb-1 text-sm font-semibold">{faq.q}</p>
+                  <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">{faq.a}</p>
                 </div>
               ))}
             </div>
@@ -285,7 +304,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA Banner ─────────────────────────────────────────────────────── */}
-      <section className="border-t border-gray-100 bg-gray-900 px-6 py-20">
+      <section className="border-t border-gray-800 bg-gray-900 px-6 py-20 dark:border-gray-700 dark:bg-black">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold text-white md:text-4xl">
             Ready to bring order to your operations?
@@ -296,13 +315,13 @@ export default function LandingPage() {
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               to="/signup"
-              className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-100 transition-colors"
+              className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100"
             >
               Get started for free
             </Link>
             <Link
               to="/login"
-              className="rounded-lg border border-gray-700 px-6 py-3 text-sm font-semibold text-gray-300 hover:border-gray-500 hover:text-white transition-colors"
+              className="rounded-lg border border-gray-700 px-6 py-3 text-sm font-semibold text-gray-300 transition-colors hover:border-gray-500 hover:text-white"
             >
               Sign in
             </Link>
@@ -311,21 +330,47 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-gray-800 bg-gray-900 px-6 py-10">
+      <footer className="border-t border-gray-800 bg-gray-900 px-6 py-10 dark:border-gray-800 dark:bg-black">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 md:flex-row">
           <span className="text-sm font-bold text-white">Nimbus</span>
           <p className="text-xs text-gray-500">
             © {new Date().getFullYear()} Nimbus. Built for commercial cleaning companies.
           </p>
           <div className="flex gap-6 text-xs text-gray-500">
-            <Link to="/login" className="hover:text-gray-300 transition-colors">Sign in</Link>
-            <Link to="/signup" className="hover:text-gray-300 transition-colors">Sign up</Link>
-            <a href="mailto:support@nimbus.app" className="hover:text-gray-300 transition-colors">Contact</a>
+            <Link to="/login" className="transition-colors hover:text-gray-300">Sign in</Link>
+            <Link to="/signup" className="transition-colors hover:text-gray-300">Sign up</Link>
+            <a href="mailto:support@nimbus.app" className="transition-colors hover:text-gray-300">Contact</a>
           </div>
         </div>
       </footer>
 
     </div>
+  )
+}
+
+// ── Icons ─────────────────────────────────────────────────────────────────────
+
+function SunIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4" />
+      <line x1="12" y1="2" x2="12" y2="6" />
+      <line x1="12" y1="18" x2="12" y2="22" />
+      <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
+      <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+      <line x1="2" y1="12" x2="6" y2="12" />
+      <line x1="18" y1="12" x2="22" y2="12" />
+      <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
+      <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
+    </svg>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
   )
 }
 
@@ -340,7 +385,7 @@ const features = [
   {
     icon: '📍',
     title: 'Real-time job tracking',
-    description: 'See every job\'s live status on a Kanban board. Know the moment a clean starts, progresses, or wraps up.',
+    description: "See every job's live status on a Kanban board. Know the moment a clean starts, progresses, or wraps up.",
   },
   {
     icon: '📸',
@@ -368,6 +413,7 @@ const kanbanColumns = [
   {
     label: 'Scheduled',
     bg: 'bg-gray-50 border-gray-200',
+    bgDark: 'dark:bg-gray-900 dark:border-gray-700',
     cards: [
       { name: 'CloudBase Tech', time: 'Tomorrow 9:00am', live: false },
       { name: 'Apex Financial', time: 'Thu 8:00am', live: false },
@@ -376,6 +422,7 @@ const kanbanColumns = [
   {
     label: 'In Progress',
     bg: 'bg-gray-100 border-gray-300',
+    bgDark: 'dark:bg-gray-800 dark:border-gray-600',
     cards: [
       { name: 'Metro Fitness', time: 'Today 8:00am', live: true },
       { name: 'Apex Financial', time: 'Today 9:30am', live: true },
@@ -384,6 +431,7 @@ const kanbanColumns = [
   {
     label: 'Completed',
     bg: 'bg-white border-gray-200',
+    bgDark: 'dark:bg-gray-900 dark:border-gray-700',
     cards: [
       { name: 'Apex Financial', time: 'Yesterday', live: false },
       { name: 'Riverside School', time: '2 days ago', live: false },
@@ -392,6 +440,7 @@ const kanbanColumns = [
   {
     label: 'Missed',
     bg: 'bg-gray-50 border-gray-200',
+    bgDark: 'dark:bg-gray-900 dark:border-gray-700',
     cards: [
       { name: 'CloudBase Tech', time: '6 days ago', live: false },
     ],
@@ -409,7 +458,7 @@ const supportOptions = [
   {
     icon: '✉️',
     title: 'Email support',
-    description: 'Send us a message and we\'ll get back to you within one business day — usually sooner.',
+    description: "Send us a message and we'll get back to you within one business day — usually sooner.",
     action: 'Send a message',
     href: 'mailto:support@nimbus.app',
   },
@@ -423,7 +472,7 @@ const supportOptions = [
   {
     icon: '🚀',
     title: 'Onboarding call',
-    description: 'New to Nimbus? Book a 20-minute call and we\'ll walk you through everything live.',
+    description: "New to Nimbus? Book a 20-minute call and we'll walk you through everything live.",
     action: 'Book a call',
     href: 'mailto:support@nimbus.app?subject=Onboarding call request',
   },
@@ -448,7 +497,7 @@ const faqs = [
   },
   {
     q: 'Is my data secure?',
-    a: 'All data is stored in Supabase with row-level security — each company\'s data is completely isolated.',
+    a: "All data is stored in Supabase with row-level security — each company's data is completely isolated.",
   },
   {
     q: 'What happens if a crew member loses their phone?',
