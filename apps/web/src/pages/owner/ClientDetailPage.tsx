@@ -76,7 +76,7 @@ export default function ClientDetailPage() {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-900 border-t-transparent" />
       </div>
     )
   }
@@ -85,7 +85,7 @@ export default function ClientDetailPage() {
     return (
       <div className="p-8">
         <p className="text-gray-500">Client not found.</p>
-        <Link to="/owner/clients" className="mt-2 text-sm text-blue-600 hover:underline">
+        <Link to="/owner/clients" className="mt-2 text-sm text-gray-900 hover:underline">
           Back to clients
         </Link>
       </div>
@@ -101,12 +101,11 @@ export default function ClientDetailPage() {
           </Link>
           <h1 className="mt-1 text-2xl font-bold text-gray-900">{client.name}</h1>
         </div>
-        <button onClick={onDelete} className="text-sm text-red-500 hover:underline">
+        <button onClick={onDelete} className="text-sm text-gray-400 hover:text-gray-700 hover:underline">
           Delete client
         </button>
       </div>
 
-      {/* Tabs */}
       <div className="mb-6 flex gap-1 border-b border-gray-200">
         {(['details', 'checklist'] as const).map((tab) => (
           <button
@@ -114,7 +113,7 @@ export default function ClientDetailPage() {
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 text-sm font-medium capitalize transition-colors ${
               activeTab === tab
-                ? 'border-b-2 border-blue-600 text-blue-600'
+                ? 'border-b-2 border-gray-900 text-gray-900'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -148,7 +147,7 @@ export default function ClientDetailPage() {
           <button
             type="submit"
             disabled={detailForm.formState.isSubmitting}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
           >
             {detailForm.formState.isSubmitting ? 'Saving…' : 'Save changes'}
           </button>
@@ -195,7 +194,7 @@ export default function ClientDetailPage() {
                   <input
                     {...checklistForm.register(`items.${index}.label`)}
                     placeholder="Task description"
-                    className="flex-1 rounded border border-gray-200 px-2 py-1 text-sm outline-none focus:border-blue-500"
+                    className="flex-1 rounded border border-gray-200 px-2 py-1 text-sm outline-none focus:border-gray-900"
                   />
                   <label className="flex items-center gap-1.5 text-xs text-gray-500 whitespace-nowrap">
                     <input
@@ -208,7 +207,7 @@ export default function ClientDetailPage() {
                   <button
                     type="button"
                     onClick={() => remove(index)}
-                    className="text-red-400 hover:text-red-600"
+                    className="text-gray-300 hover:text-gray-600"
                     aria-label="Remove item"
                   >
                     ✕
@@ -220,7 +219,7 @@ export default function ClientDetailPage() {
             <button
               type="button"
               onClick={() => append({ label: '', requiresPhoto: false, position: fields.length })}
-              className="mt-4 text-sm text-blue-600 hover:underline"
+              className="mt-4 text-sm font-medium text-gray-900 hover:underline"
             >
               + Add item
             </button>
@@ -229,7 +228,7 @@ export default function ClientDetailPage() {
           <button
             type="submit"
             disabled={checklistForm.formState.isSubmitting}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
           >
             {checklistForm.formState.isSubmitting ? 'Saving…' : 'Save checklist'}
           </button>
@@ -240,7 +239,7 @@ export default function ClientDetailPage() {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-200'
 
 function Field({
   label,
@@ -255,7 +254,7 @@ function Field({
     <div>
       <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
       {children}
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-gray-600">{error}</p>}
     </div>
   )
 }

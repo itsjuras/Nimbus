@@ -3,10 +3,10 @@ import { useMyJobs } from '../../hooks/useCrewJobs'
 import type { Job, JobStatus } from '@nimbus/shared'
 
 const STATUS_STYLE: Record<JobStatus, { badge: string; label: string }> = {
-  scheduled: { badge: 'bg-blue-100 text-blue-700', label: 'Scheduled' },
-  in_progress: { badge: 'bg-yellow-100 text-yellow-700', label: 'In Progress' },
-  completed: { badge: 'bg-green-100 text-green-700', label: 'Completed' },
-  missed: { badge: 'bg-red-100 text-red-700', label: 'Missed' },
+  scheduled: { badge: 'bg-gray-100 text-gray-600', label: 'Scheduled' },
+  in_progress: { badge: 'bg-gray-900 text-white', label: 'In Progress' },
+  completed: { badge: 'bg-gray-100 text-gray-900', label: 'Completed' },
+  missed: { badge: 'bg-gray-100 text-gray-400', label: 'Missed' },
 }
 
 function isToday(dateStr: string) {
@@ -54,7 +54,7 @@ export default function CrewJobsPage() {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-900 border-t-transparent" />
       </div>
     )
   }

@@ -6,10 +6,10 @@ import { useInvoices, useCreateInvoice, useSendInvoice } from '../../hooks/useIn
 import { useClients } from '../../hooks/useClients'
 
 const STATUS_BADGE: Record<InvoiceStatus, string> = {
-  draft: 'bg-gray-100 text-gray-600',
-  sent: 'bg-blue-100 text-blue-700',
-  paid: 'bg-green-100 text-green-700',
-  void: 'bg-red-100 text-red-500',
+  draft: 'bg-gray-100 text-gray-500',
+  sent: 'bg-gray-200 text-gray-700',
+  paid: 'bg-gray-900 text-white',
+  void: 'bg-gray-100 text-gray-400',
 }
 
 function formatCents(cents: number, currency: string) {
@@ -51,7 +51,7 @@ export default function InvoicesPage() {
         <h1 className="text-2xl font-bold text-gray-900">Invoices</h1>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
         >
           {showForm ? 'Cancel' : 'New invoice'}
         </button>
@@ -89,11 +89,10 @@ export default function InvoicesPage() {
             </Field>
           </div>
 
-          {/* Line items */}
           <div className="mt-6">
             <h3 className="mb-3 text-sm font-semibold text-gray-700">Line items</h3>
             {errors.lineItems?.root && (
-              <p className="mb-2 text-xs text-red-500">{errors.lineItems.root.message}</p>
+              <p className="mb-2 text-xs text-gray-600">{errors.lineItems.root.message}</p>
             )}
             <div className="space-y-2">
               {fields.map((field, index) => (
@@ -121,7 +120,7 @@ export default function InvoicesPage() {
                     type="button"
                     onClick={() => remove(index)}
                     disabled={fields.length === 1}
-                    className="text-red-400 hover:text-red-600 disabled:opacity-30"
+                    className="text-gray-300 hover:text-gray-600 disabled:opacity-30"
                   >
                     ✕
                   </button>
@@ -131,7 +130,7 @@ export default function InvoicesPage() {
             <button
               type="button"
               onClick={() => append({ description: '', quantity: 1, unitAmountCents: 0 })}
-              className="mt-3 text-sm text-blue-600 hover:underline"
+              className="mt-3 text-sm font-medium text-gray-900 hover:underline"
             >
               + Add line item
             </button>
@@ -142,7 +141,7 @@ export default function InvoicesPage() {
           </p>
 
           {createInvoice.error && (
-            <p className="mt-3 text-sm text-red-500">
+            <p className="mt-3 text-sm text-gray-700">
               {createInvoice.error instanceof Error ? createInvoice.error.message : 'Failed to create invoice'}
             </p>
           )}
@@ -150,7 +149,7 @@ export default function InvoicesPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="mt-4 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
           >
             {isSubmitting ? 'Creating…' : 'Create invoice'}
           </button>
@@ -205,7 +204,7 @@ export default function InvoicesPage() {
                         <button
                           onClick={() => sendInvoice.mutate(invoice.id)}
                           disabled={sendInvoice.isPending}
-                          className="mr-3 text-blue-600 hover:underline disabled:opacity-50"
+                          className="mr-3 font-medium text-gray-900 hover:underline disabled:opacity-50"
                         >
                           Send
                         </button>
@@ -233,7 +232,7 @@ export default function InvoicesPage() {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-200'
 
 function Field({
   label,
@@ -248,7 +247,7 @@ function Field({
     <div>
       <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
       {children}
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-gray-600">{error}</p>}
     </div>
   )
 }

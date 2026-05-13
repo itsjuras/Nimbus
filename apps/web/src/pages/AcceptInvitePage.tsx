@@ -16,9 +16,6 @@ const SetPasswordSchema = z
   })
 type SetPasswordForm = z.infer<typeof SetPasswordSchema>
 
-// Supabase sends the invite token as a URL hash fragment.
-// The JS client parses it automatically on load — we just need
-// to detect the resulting session and prompt for a new password.
 export default function AcceptInvitePage() {
   const navigate = useNavigate()
   const [ready, setReady] = useState(false)
@@ -52,7 +49,7 @@ export default function AcceptInvitePage() {
   if (!ready) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-900 border-t-transparent" />
       </div>
     )
   }
@@ -61,8 +58,8 @@ export default function AcceptInvitePage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-blue-600">Nimbus</h1>
-          <p className="mt-2 text-gray-600">Set your password to get started</p>
+          <h1 className="text-3xl font-bold text-gray-900">Nimbus</h1>
+          <p className="mt-2 text-gray-500">Set your password to get started</p>
         </div>
 
         <form
@@ -75,10 +72,10 @@ export default function AcceptInvitePage() {
               {...register('password')}
               type="password"
               placeholder="Min. 8 characters"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className={inputClass}
             />
             {errors.password && (
-              <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
+              <p className="mt-1 text-xs text-gray-600">{errors.password.message}</p>
             )}
           </div>
 
@@ -87,15 +84,15 @@ export default function AcceptInvitePage() {
             <input
               {...register('confirmPassword')}
               type="password"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className={inputClass}
             />
             {errors.confirmPassword && (
-              <p className="mt-1 text-xs text-red-500">{errors.confirmPassword.message}</p>
+              <p className="mt-1 text-xs text-gray-600">{errors.confirmPassword.message}</p>
             )}
           </div>
 
           {errors.root && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-800">
               {errors.root.message}
             </p>
           )}
@@ -103,7 +100,7 @@ export default function AcceptInvitePage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
           >
             {isSubmitting ? 'Saving…' : 'Set password & continue'}
           </button>
@@ -112,3 +109,6 @@ export default function AcceptInvitePage() {
     </div>
   )
 }
+
+const inputClass =
+  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-200'

@@ -7,7 +7,7 @@ export function CrewLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <header className="flex h-14 items-center justify-between bg-white px-4 shadow-sm">
-        <span className="text-lg font-bold text-blue-600">Nimbus</span>
+        <span className="text-lg font-bold text-gray-900">Nimbus</span>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-600">{profile?.fullName}</span>
           <button

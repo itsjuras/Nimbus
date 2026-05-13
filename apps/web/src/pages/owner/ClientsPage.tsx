@@ -30,7 +30,7 @@ export default function ClientsPage() {
         <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
         >
           {showForm ? 'Cancel' : 'Add client'}
         </button>
@@ -73,7 +73,7 @@ export default function ClientsPage() {
           </Field>
 
           {createClient.error && (
-            <p className="text-sm text-red-500">
+            <p className="text-sm text-gray-700">
               {createClient.error instanceof Error
                 ? createClient.error.message
                 : 'Failed to create client'}
@@ -83,7 +83,7 @@ export default function ClientsPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
           >
             {isSubmitting ? 'Saving…' : 'Save client'}
           </button>
@@ -111,7 +111,7 @@ export default function ClientsPage() {
               {clients?.map((client) => (
                 <tr key={client.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 font-medium text-gray-900">
-                    <Link to={`/owner/clients/${client.id}`} className="hover:text-blue-600">
+                    <Link to={`/owner/clients/${client.id}`} className="hover:underline">
                       {client.name}
                     </Link>
                   </td>
@@ -125,7 +125,7 @@ export default function ClientsPage() {
                   <td className="px-6 py-4 text-right">
                     <Link
                       to={`/owner/clients/${client.id}`}
-                      className="mr-3 text-blue-600 hover:underline"
+                      className="mr-3 font-medium text-gray-900 hover:underline"
                     >
                       Edit
                     </Link>
@@ -135,7 +135,7 @@ export default function ClientsPage() {
                           deleteClient.mutate(client.id)
                         }
                       }}
-                      className="text-red-500 hover:underline"
+                      className="text-gray-400 hover:text-gray-700 hover:underline"
                     >
                       Delete
                     </button>
@@ -151,7 +151,7 @@ export default function ClientsPage() {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-200'
 
 function Field({
   label,
@@ -166,7 +166,7 @@ function Field({
     <div>
       <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
       {children}
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-gray-600">{error}</p>}
     </div>
   )
 }

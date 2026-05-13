@@ -5,17 +5,17 @@ import { useCrewMembers } from '../../hooks/useCrew'
 import type { Job, JobStatus } from '@nimbus/shared'
 
 const COLUMNS: { status: JobStatus; label: string; color: string; dot: string }[] = [
-  { status: 'scheduled', label: 'Scheduled', color: 'bg-blue-50 border-blue-200', dot: 'bg-blue-400' },
-  { status: 'in_progress', label: 'In Progress', color: 'bg-yellow-50 border-yellow-200', dot: 'bg-yellow-400' },
-  { status: 'completed', label: 'Completed', color: 'bg-green-50 border-green-200', dot: 'bg-green-400' },
-  { status: 'missed', label: 'Missed', color: 'bg-red-50 border-red-200', dot: 'bg-red-400' },
+  { status: 'scheduled', label: 'Scheduled', color: 'bg-gray-50 border-gray-200', dot: 'bg-gray-300' },
+  { status: 'in_progress', label: 'In Progress', color: 'bg-gray-100 border-gray-300', dot: 'bg-gray-600' },
+  { status: 'completed', label: 'Completed', color: 'bg-white border-gray-200', dot: 'bg-gray-900' },
+  { status: 'missed', label: 'Missed', color: 'bg-gray-50 border-gray-200', dot: 'bg-gray-300' },
 ]
 
 const BADGE: Record<JobStatus, string> = {
-  scheduled: 'bg-blue-100 text-blue-700',
-  in_progress: 'bg-yellow-100 text-yellow-700',
-  completed: 'bg-green-100 text-green-700',
-  missed: 'bg-red-100 text-red-700',
+  scheduled: 'bg-gray-100 text-gray-600',
+  in_progress: 'bg-gray-900 text-white',
+  completed: 'bg-gray-100 text-gray-900',
+  missed: 'bg-gray-100 text-gray-400',
 }
 
 export default function DashboardPage() {
@@ -40,14 +40,13 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-900 border-t-transparent" />
       </div>
     )
   }
 
   return (
     <div className="flex h-full flex-col">
-      {/* Summary bar */}
       <div className="border-b border-gray-200 bg-white px-8 py-4">
         <div className="flex items-baseline justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
@@ -72,7 +71,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Kanban board */}
       <div className="flex flex-1 gap-4 overflow-x-auto p-6">
         {COLUMNS.map(({ status, label, color }) => {
           const columnJobs = byStatus(status)
@@ -124,7 +122,7 @@ function JobCard({
   return (
     <Link
       to={`/owner/jobs/${job.id}`}
-      className="block rounded-lg border border-white bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+      className="block rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
     >
       <p className="font-semibold text-gray-900 leading-tight">{clientName}</p>
 
@@ -148,10 +146,10 @@ function LiveIndicator({ status }: { status: JobStatus }) {
   return (
     <div className="mt-2 flex items-center gap-1.5">
       <span className="relative flex h-2 w-2">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-400 opacity-75" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-500" />
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-600 opacity-75" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-gray-900" />
       </span>
-      <span className="text-xs font-medium text-yellow-600">Live</span>
+      <span className="text-xs font-medium text-gray-600">Live</span>
     </div>
   )
 }

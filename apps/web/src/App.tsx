@@ -1,9 +1,10 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { OwnerLayout } from './components/layouts/OwnerLayout'
 import { CrewLayout } from './components/layouts/CrewLayout'
 
+const LandingPage = lazy(() => import('./pages/LandingPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const SignUpPage = lazy(() => import('./pages/SignUpPage'))
 const AcceptInvitePage = lazy(() => import('./pages/AcceptInvitePage'))
@@ -23,7 +24,7 @@ const CrewChecklistPage = lazy(() => import('./pages/crew/ChecklistPage'))
 
 const Spinner = () => (
   <div className="flex h-screen items-center justify-center">
-    <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-900 border-t-transparent" />
   </div>
 )
 
@@ -57,8 +58,8 @@ export default function App() {
           </Route>
         </Route>
 
-        {/* Fallback */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* Landing */}
+        <Route path="/" element={<LandingPage />} />
       </Routes>
     </Suspense>
   )

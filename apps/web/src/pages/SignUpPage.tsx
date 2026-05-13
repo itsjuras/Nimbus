@@ -35,8 +35,8 @@ export default function SignUpPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-blue-600">Nimbus</h1>
-          <p className="mt-2 text-gray-600">Set up your cleaning company</p>
+          <h1 className="text-3xl font-bold text-gray-900">Nimbus</h1>
+          <p className="mt-2 text-gray-500">Set up your cleaning company</p>
         </div>
 
         <form
@@ -74,7 +74,7 @@ export default function SignUpPage() {
           </Field>
 
           {errors.root && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-800">
               {errors.root.message}
             </p>
           )}
@@ -82,14 +82,14 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
           >
             {isSubmitting ? 'Creating account…' : 'Create account'}
           </button>
 
           <p className="text-center text-sm text-gray-500">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 hover:underline">
+            <Link to="/login" className="font-medium text-gray-900 hover:underline">
               Sign in
             </Link>
           </p>
@@ -100,7 +100,7 @@ export default function SignUpPage() {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-200'
 
 function Field({
   label,
@@ -115,7 +115,7 @@ function Field({
     <div>
       <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
       {children}
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-gray-600">{error}</p>}
     </div>
   )
 }

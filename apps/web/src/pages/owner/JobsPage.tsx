@@ -16,10 +16,10 @@ const STATUS_TABS: { label: string; value: JobStatus | undefined }[] = [
 ]
 
 const STATUS_BADGE: Record<JobStatus, string> = {
-  scheduled: 'bg-blue-100 text-blue-700',
-  in_progress: 'bg-yellow-100 text-yellow-700',
-  completed: 'bg-green-100 text-green-700',
-  missed: 'bg-red-100 text-red-700',
+  scheduled: 'bg-gray-100 text-gray-600',
+  in_progress: 'bg-gray-900 text-white',
+  completed: 'bg-gray-100 text-gray-900',
+  missed: 'bg-gray-100 text-gray-400',
 }
 
 export default function JobsPage() {
@@ -55,7 +55,7 @@ export default function JobsPage() {
         <h1 className="text-2xl font-bold text-gray-900">Jobs</h1>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
         >
           {showForm ? 'Cancel' : 'Schedule job'}
         </button>
@@ -117,7 +117,7 @@ export default function JobsPage() {
           </Field>
 
           {createJob.error && (
-            <p className="mt-2 text-sm text-red-500">
+            <p className="mt-2 text-sm text-gray-700">
               {createJob.error instanceof Error ? createJob.error.message : 'Failed to create job'}
             </p>
           )}
@@ -125,14 +125,13 @@ export default function JobsPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="mt-4 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
           >
             {isSubmitting ? 'Scheduling…' : 'Schedule job'}
           </button>
         </form>
       )}
 
-      {/* Status filter tabs */}
       <div className="mb-4 flex gap-1 border-b border-gray-200">
         {STATUS_TABS.map((tab) => (
           <button
@@ -140,7 +139,7 @@ export default function JobsPage() {
             onClick={() => setActiveStatus(tab.value)}
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               activeStatus === tab.value
-                ? 'border-b-2 border-blue-600 text-blue-600'
+                ? 'border-b-2 border-gray-900 text-gray-900'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -170,7 +169,7 @@ export default function JobsPage() {
               {jobs?.map((job) => (
                 <tr key={job.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 font-medium text-gray-900">
-                    <Link to={`/owner/jobs/${job.id}`} className="hover:text-blue-600">
+                    <Link to={`/owner/jobs/${job.id}`} className="hover:underline">
                       {job.clientId}
                     </Link>
                   </td>
@@ -187,7 +186,7 @@ export default function JobsPage() {
                   <td className="px-6 py-4 text-right">
                     <Link
                       to={`/owner/jobs/${job.id}`}
-                      className="mr-3 text-blue-600 hover:underline"
+                      className="mr-3 font-medium text-gray-900 hover:underline"
                     >
                       View
                     </Link>
@@ -196,7 +195,7 @@ export default function JobsPage() {
                         onClick={() => {
                           if (confirm('Delete this job?')) deleteJob.mutate(job.id)
                         }}
-                        className="text-red-500 hover:underline"
+                        className="text-gray-400 hover:text-gray-700 hover:underline"
                       >
                         Delete
                       </button>
@@ -213,7 +212,7 @@ export default function JobsPage() {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-200'
 
 function Field({
   label,
@@ -228,7 +227,7 @@ function Field({
     <div>
       <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
       {children}
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-gray-600">{error}</p>}
     </div>
   )
 }
