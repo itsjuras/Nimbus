@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useRef, type ReactNode } from 'react'
+import { useRef, useCallback, type ReactNode } from 'react'
 import { useTheme } from '../hooks/useTheme'
 import { ShaderBackground } from '../components/ui/shader-background'
 import { GlowCard } from '../components/ui/glow-card'
@@ -11,9 +11,9 @@ export default function LandingPage() {
   const aboutRef = useRef<HTMLElement>(null)
   const supportRef = useRef<HTMLElement>(null)
 
-  function scrollTo(ref: React.RefObject<HTMLElement | null>) {
+  const scrollTo = useCallback((ref: React.RefObject<HTMLElement | null>) => {
     ref.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  }, [])
 
   return (
     <div className="min-h-screen font-plex uppercase tracking-widest text-gray-900 dark:text-gray-100" style={{ wordSpacing: '-0.3em' }}>
