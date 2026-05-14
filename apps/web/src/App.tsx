@@ -3,13 +3,14 @@ import { Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { OwnerLayout } from './components/layouts/OwnerLayout'
 import { CrewLayout } from './components/layouts/CrewLayout'
+import { DemoLayout } from './components/layouts/DemoLayout'
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const SignUpPage = lazy(() => import('./pages/SignUpPage'))
 const AcceptInvitePage = lazy(() => import('./pages/AcceptInvitePage'))
 
-// Owner pages (stubbed — filled in during later steps)
+// Owner pages
 const OwnerDashboard = lazy(() => import('./pages/owner/DashboardPage'))
 const JobsPage = lazy(() => import('./pages/owner/JobsPage'))
 const JobDetailPage = lazy(() => import('./pages/owner/JobDetailPage'))
@@ -21,6 +22,15 @@ const InvoicesPage = lazy(() => import('./pages/owner/InvoicesPage'))
 // Crew pages
 const CrewJobsPage = lazy(() => import('./pages/crew/JobsPage'))
 const CrewChecklistPage = lazy(() => import('./pages/crew/ChecklistPage'))
+
+// Demo pages
+const DemoDashboard = lazy(() => import('./pages/demo/DashboardPage'))
+const DemoJobsPage = lazy(() => import('./pages/demo/JobsPage'))
+const DemoJobDetailPage = lazy(() => import('./pages/demo/JobDetailPage'))
+const DemoClientsPage = lazy(() => import('./pages/demo/ClientsPage'))
+const DemoClientDetailPage = lazy(() => import('./pages/demo/ClientDetailPage'))
+const DemoCrewPage = lazy(() => import('./pages/demo/CrewPage'))
+const DemoInvoicesPage = lazy(() => import('./pages/demo/InvoicesPage'))
 
 const Spinner = () => (
   <div className="flex h-screen items-center justify-center">
@@ -56,6 +66,17 @@ export default function App() {
             <Route path="/crew/jobs" element={<CrewJobsPage />} />
             <Route path="/crew/jobs/:id" element={<CrewChecklistPage />} />
           </Route>
+        </Route>
+
+        {/* Demo routes — no auth required */}
+        <Route element={<DemoLayout />}>
+          <Route path="/demo" element={<DemoDashboard />} />
+          <Route path="/demo/jobs" element={<DemoJobsPage />} />
+          <Route path="/demo/jobs/:id" element={<DemoJobDetailPage />} />
+          <Route path="/demo/clients" element={<DemoClientsPage />} />
+          <Route path="/demo/clients/:id" element={<DemoClientDetailPage />} />
+          <Route path="/demo/crew" element={<DemoCrewPage />} />
+          <Route path="/demo/invoices" element={<DemoInvoicesPage />} />
         </Route>
 
         {/* Landing */}

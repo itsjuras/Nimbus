@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { useRef } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { useTheme } from '../hooks/useTheme'
+import { ShaderBackground } from '../components/ui/shader-background'
 
 export default function LandingPage() {
   const { theme, toggle } = useTheme()
@@ -14,14 +15,15 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+    <div className="min-h-screen font-plex uppercase tracking-widest text-gray-900 dark:text-gray-100" style={{ wordSpacing: '-0.3em' }}>
+      <ShaderBackground isDark={theme === 'dark'} />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/90">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <span className="text-xl font-bold tracking-tight">Nimbus</span>
+        <div className="mx-auto grid h-16 max-w-7xl grid-cols-3 items-center px-10">
+          <span className="text-xl font-bold uppercase tracking-widest">Nimbus</span>
 
-          <nav className="hidden items-center gap-8 md:flex">
+          <nav className="hidden items-center justify-center gap-8 md:flex">
             {[
               { label: 'Product', ref: productRef },
               { label: 'Dashboard', ref: dashboardRef },
@@ -31,20 +33,20 @@ export default function LandingPage() {
               <button
                 key={label}
                 onClick={() => scrollTo(ref)}
-                className="text-sm text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                className="text-sm uppercase tracking-widest text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
               >
                 {label}
               </button>
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
-            <Link to="/login" className="text-sm text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+          <div className="flex items-center justify-end gap-5">
+            <Link to="/login" className="text-sm uppercase tracking-widest text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
               Sign in
             </Link>
             <Link
               to="/signup"
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
             >
               Get started
             </Link>
@@ -69,49 +71,40 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-6 pb-24 pt-24 text-center">
-        <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-gray-900 dark:bg-gray-100" />
+      {/* ── Hero — transparent so shader shows through ─────────────────────── */}
+      <section className="flex min-h-[90vh] flex-col items-center justify-center px-6 text-center">
+        <div className="mb-12 inline-flex items-center gap-2.5 rounded-full border border-gray-300/60 bg-white/60 px-5 py-2 text-xs font-medium tracking-widest text-gray-500 shadow-sm backdrop-blur-sm dark:border-gray-700/60 dark:bg-gray-900/60 dark:text-gray-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
           Built for commercial cleaning companies
         </div>
 
-        <h1 className="mx-auto max-w-3xl text-5xl font-bold leading-tight tracking-tight md:text-6xl">
+        <h1 className="mx-auto max-w-5xl text-5xl font-bold leading-[1.05] text-gray-950 dark:text-gray-50 md:text-6xl lg:text-[5.5rem]">
           Run your cleaning business without the chaos
         </h1>
 
-        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-gray-500 dark:text-gray-400">
-          Nimbus replaces the WhatsApp groups, paper checklists, and chasing clients for payment — with one clean tool your whole team actually uses.
-        </p>
-
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <div className="mt-16 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
             to="/signup"
-            className="rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+            className="rounded-lg border border-gray-900 bg-gray-900/90 px-10 py-4 text-xs font-bold tracking-widest text-white transition-all hover:bg-gray-900 dark:border-white dark:bg-white/90 dark:text-gray-900 dark:hover:bg-white"
           >
             Start for free
           </Link>
-          <button
-            onClick={() => scrollTo(dashboardRef)}
-            className="rounded-lg border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-400 hover:text-gray-900 dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:text-gray-100"
+          <Link
+            to="/demo"
+            className="rounded-lg border border-gray-400/50 bg-white/30 px-10 py-4 text-xs font-bold tracking-widest text-gray-800 transition-all hover:border-gray-700 hover:bg-white/60 dark:border-gray-600/50 dark:bg-black/20 dark:text-gray-200 dark:hover:border-gray-400 dark:hover:bg-black/40"
           >
             See the dashboard →
-          </button>
+          </Link>
         </div>
-
-        <p className="mt-4 text-xs text-gray-400 dark:text-gray-600">No credit card required · Set up in under 5 minutes</p>
       </section>
 
       {/* ── Product ────────────────────────────────────────────────────────── */}
-      <section ref={productRef} className="border-t border-gray-100 bg-gray-50 px-6 py-24 dark:border-gray-800 dark:bg-gray-900">
+      <section ref={productRef} className="px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Product</p>
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-              Everything your team needs, nothing they don't
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-gray-500 dark:text-gray-400">
-              From scheduling to client sign-off, Nimbus handles the operational side so you can focus on doing great work.
+            <p className="mx-auto max-w-2xl text-3xl font-bold leading-tight md:text-4xl">
+              Nimbus handles the operational side so you can focus on doing great work.
             </p>
           </div>
 
@@ -130,57 +123,64 @@ export default function LandingPage() {
       </section>
 
       {/* ── Dashboard preview ──────────────────────────────────────────────── */}
-      <section ref={dashboardRef} className="border-t border-gray-100 px-6 py-24 dark:border-gray-800">
+      <section ref={dashboardRef} className="px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Dashboard</p>
             <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
               Every job, at a glance
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-gray-500 dark:text-gray-400">
-              A live Kanban board shows you exactly where every job stands — updating in real time as your crew works.
-            </p>
           </div>
 
           {/* Browser mockup */}
           <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-gray-200 shadow-2xl shadow-gray-200 dark:border-gray-700 dark:shadow-gray-950">
-            {/* Browser chrome */}
-            <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+            {/* Browser chrome — 3-col grid so URL bar is truly centered */}
+            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
               <div className="flex gap-1.5">
                 <div className="h-3 w-3 rounded-full bg-gray-200 dark:bg-gray-600" />
                 <div className="h-3 w-3 rounded-full bg-gray-200 dark:bg-gray-600" />
                 <div className="h-3 w-3 rounded-full bg-gray-200 dark:bg-gray-600" />
               </div>
-              <div className="mx-auto flex w-64 items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 dark:border-gray-600 dark:bg-gray-700">
-                <div className="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-500" />
-                <span className="text-xs text-gray-400 dark:text-gray-500">app.nimbus.ca/owner/dashboard</span>
+              <div className="flex items-center justify-center">
+                <div className="flex w-64 items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 dark:border-gray-600 dark:bg-gray-700">
+                  <div className="h-2 w-2 shrink-0 rounded-full bg-gray-300 dark:bg-gray-500" />
+                  <span className="truncate text-xs text-gray-400 dark:text-gray-500">app.nimbus.ca/owner/dashboard</span>
+                </div>
+              </div>
+              <div className="flex gap-1.5 opacity-0">
+                <div className="h-3 w-3 rounded-full" />
+                <div className="h-3 w-3 rounded-full" />
+                <div className="h-3 w-3 rounded-full" />
               </div>
             </div>
 
             {/* Dashboard UI */}
             <div className="flex bg-white dark:bg-gray-900">
               {/* Sidebar */}
-              <div className="w-44 shrink-0 border-r border-gray-100 bg-white py-4 dark:border-gray-800 dark:bg-gray-900">
-                <div className="mb-6 border-b border-gray-100 px-4 pb-4 dark:border-gray-800">
+              <div className="w-44 shrink-0 border-r border-gray-100 bg-white dark:border-gray-800 dark:bg-gray-900">
+                <div className="flex h-11 items-center border-b border-gray-100 px-4 dark:border-gray-800">
                   <span className="text-sm font-bold">Nimbus</span>
                 </div>
-                {['Dashboard', 'Jobs', 'Clients', 'Crew', 'Invoices'].map((item, i) => (
-                  <div
-                    key={item}
-                    className={`mx-2 mb-0.5 rounded-md px-3 py-2 text-xs font-medium ${
-                      i === 0
-                        ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
-                        : 'text-gray-400 dark:text-gray-600'
-                    }`}
-                  >
-                    {item}
-                  </div>
-                ))}
+                <div className="p-2 pt-3">
+                  {['Dashboard', 'Jobs', 'Clients', 'Crew', 'Invoices'].map((item, i) => (
+                    <div
+                      key={item}
+                      className={`mb-0.5 rounded-md px-3 py-2 text-xs font-medium ${
+                        i === 0
+                          ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
+                          : 'text-gray-400 dark:text-gray-600'
+                      }`}
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Main content */}
-              <div className="flex-1 overflow-hidden bg-gray-50 p-5 dark:bg-gray-950">
-                <div className="-mx-5 -mt-5 mb-5 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
+              <div className="flex flex-1 flex-col overflow-hidden bg-gray-50 dark:bg-gray-950">
+                {/* Content top bar — same height as sidebar header */}
+                <div className="flex h-11 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-gray-900">
                   <span className="text-sm font-bold">Dashboard</span>
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-gray-900 dark:bg-gray-100" />
@@ -188,9 +188,10 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-3 overflow-hidden">
+                {/* Kanban */}
+                <div className="flex gap-3 p-5">
                   {kanbanColumns.map((col) => (
-                    <div key={col.label} className="w-40 shrink-0">
+                    <div key={col.label} className="flex-1 min-w-0">
                       <div className="mb-2 flex items-center justify-between">
                         <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">{col.label}</span>
                         <span className="rounded-full border border-gray-200 bg-white px-1.5 py-0.5 text-xs text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500">{col.cards.length}</span>
@@ -198,7 +199,7 @@ export default function LandingPage() {
                       <div className={`min-h-32 space-y-2 rounded-xl border p-2 ${col.bg} ${col.bgDark}`}>
                         {col.cards.map((card) => (
                           <div key={card.name} className="rounded-lg border border-gray-100 bg-white p-2.5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                            <p className="text-xs font-semibold leading-tight text-gray-900 dark:text-gray-100">{card.name}</p>
+                            <p className="truncate text-xs font-semibold leading-tight text-gray-900 dark:text-gray-100">{card.name}</p>
                             <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{card.time}</p>
                             {card.live && (
                               <div className="mt-1.5 flex items-center gap-1">
@@ -218,17 +219,17 @@ export default function LandingPage() {
 
           <div className="mt-10 text-center">
             <Link
-              to="/signup"
+              to="/demo"
               className="inline-flex rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
             >
-              Try it yourself →
+              Test it out →
             </Link>
           </div>
         </div>
       </section>
 
       {/* ── About ──────────────────────────────────────────────────────────── */}
-      <section ref={aboutRef} className="border-t border-gray-100 bg-gray-50 px-6 py-24 dark:border-gray-800 dark:bg-gray-900">
+      <section ref={aboutRef} className="px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-16 md:grid-cols-2 md:items-center">
             <div>
@@ -237,10 +238,10 @@ export default function LandingPage() {
                 Built by people who understand the job
               </h2>
               <p className="mt-5 leading-relaxed text-gray-500 dark:text-gray-400">
-                Commercial cleaning is a trust business. Clients don't just want clean spaces — they want proof. And owners don't just need crew — they need visibility.
+                Commercial cleaning is a trust business. Clients don't just want clean spaces, they want proof. And owners don't just need crew, they need visibility.
               </p>
               <p className="mt-4 leading-relaxed text-gray-500 dark:text-gray-400">
-                Nimbus was built to give small cleaning companies the same operational clarity that enterprise facilities teams have — without the enterprise price tag or the month-long onboarding.
+                Nimbus was built to give small cleaning companies the same operational clarity that enterprise facilities teams have, without the enterprise price tag or the month-long onboarding.
               </p>
               <p className="mt-4 leading-relaxed text-gray-500 dark:text-gray-400">
                 We handle the software. You handle the cleaning.
@@ -249,7 +250,7 @@ export default function LandingPage() {
 
             <div className="grid grid-cols-2 gap-4">
               {stats.map((s) => (
-                <div key={s.label} className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                <div key={s.label} className="flex flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white p-6 text-center dark:border-gray-700 dark:bg-gray-800">
                   <p className="text-3xl font-bold">{s.value}</p>
                   <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
                 </div>
@@ -260,41 +261,27 @@ export default function LandingPage() {
       </section>
 
       {/* ── Support ────────────────────────────────────────────────────────── */}
-      <section ref={supportRef} className="border-t border-gray-100 px-6 py-24 dark:border-gray-800">
+      <section ref={supportRef} className="px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Support</p>
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+            <h2 className="mb-8 text-3xl font-bold tracking-tight md:text-4xl">
               We're here when you need us
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-gray-500 dark:text-gray-400">
-              Whether you're onboarding your first crew member or troubleshooting a webhook, we respond fast.
-            </p>
+            <a
+              href="mailto:support@nimbus.app"
+              className="inline-flex rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+            >
+              Email us →
+            </a>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {supportOptions.map((s) => (
-              <div key={s.title} className="rounded-2xl border border-gray-200 p-6 dark:border-gray-700">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-lg dark:bg-gray-800">
-                  {s.icon}
-                </div>
-                <h3 className="mb-2 font-semibold">{s.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">{s.description}</p>
-                {s.action && (
-                  <a href={s.href} className="mt-4 inline-block text-sm font-medium hover:underline">
-                    {s.action} →
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-16 rounded-2xl border border-gray-200 bg-gray-50 p-8 dark:border-gray-700 dark:bg-gray-900">
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 dark:border-gray-700 dark:bg-gray-900">
             <h3 className="mb-8 text-xl font-bold">Common questions</h3>
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-8 md:grid-cols-2">
               {faqs.map((faq) => (
                 <div key={faq.q}>
-                  <p className="mb-1 text-sm font-semibold">{faq.q}</p>
+                  <p className="mb-2 text-sm font-semibold">{faq.q}</p>
                   <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">{faq.a}</p>
                 </div>
               ))}
@@ -304,24 +291,24 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA Banner ─────────────────────────────────────────────────────── */}
-      <section className="border-t border-gray-800 bg-gray-900 px-6 py-20 dark:border-gray-700 dark:bg-black">
+      <section className="px-6 py-20">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold text-white md:text-4xl">
+          <h2 className="text-3xl font-bold md:text-4xl">
             Ready to bring order to your operations?
           </h2>
-          <p className="mt-4 text-gray-400">
+          <p className="mt-4 text-gray-500 dark:text-gray-400">
             Set up your company, invite your crew, and schedule your first job in under 10 minutes.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               to="/signup"
-              className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100"
+              className="rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
             >
               Get started for free
             </Link>
             <Link
               to="/login"
-              className="rounded-lg border border-gray-700 px-6 py-3 text-sm font-semibold text-gray-300 transition-colors hover:border-gray-500 hover:text-white"
+              className="rounded-lg border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-gray-500 hover:text-gray-900 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-gray-100"
             >
               Sign in
             </Link>
@@ -330,16 +317,16 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-gray-800 bg-gray-900 px-6 py-10 dark:border-gray-800 dark:bg-black">
+      <footer className="border-t border-gray-100 bg-white/90 px-6 py-10 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/90">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 md:flex-row">
-          <span className="text-sm font-bold text-white">Nimbus</span>
+          <span className="text-sm font-bold">Nimbus</span>
           <p className="text-xs text-gray-500">
             © {new Date().getFullYear()} Nimbus. Built for commercial cleaning companies.
           </p>
           <div className="flex gap-6 text-xs text-gray-500">
-            <Link to="/login" className="transition-colors hover:text-gray-300">Sign in</Link>
-            <Link to="/signup" className="transition-colors hover:text-gray-300">Sign up</Link>
-            <a href="mailto:support@nimbus.app" className="transition-colors hover:text-gray-300">Contact</a>
+            <Link to="/login" className="transition-colors hover:text-gray-900 dark:hover:text-gray-100">Sign in</Link>
+            <Link to="/signup" className="transition-colors hover:text-gray-900 dark:hover:text-gray-100">Sign up</Link>
+            <a href="mailto:support@nimbus.app" className="transition-colors hover:text-gray-900 dark:hover:text-gray-100">Contact</a>
           </div>
         </div>
       </footer>
@@ -348,7 +335,93 @@ export default function LandingPage() {
   )
 }
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
+// ── Feature / support icons ───────────────────────────────────────────────────
+
+function ChecklistIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 11l3 3L22 4" />
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </svg>
+  )
+}
+
+function ActivityIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </svg>
+  )
+}
+
+function CameraIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+      <circle cx="12" cy="13" r="4" />
+    </svg>
+  )
+}
+
+function UsersIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  )
+}
+
+function FileTextIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  )
+}
+
+function CreditCardIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+      <line x1="1" y1="10" x2="23" y2="10" />
+    </svg>
+  )
+}
+
+function MailIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
+    </svg>
+  )
+}
+
+function BookIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </svg>
+  )
+}
+
+function PhoneIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.42 2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  )
+}
+
+// ── Theme icons ───────────────────────────────────────────────────────────────
 
 function SunIcon() {
   return (
@@ -376,34 +449,34 @@ function MoonIcon() {
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const features = [
+const features: { icon: ReactNode; title: string; description: string }[] = [
   {
-    icon: '📋',
+    icon: <ChecklistIcon />,
     title: 'Digital checklists',
     description: 'Build custom task lists for each client. Crew work through them on their phones — no paper, no guessing.',
   },
   {
-    icon: '📍',
+    icon: <ActivityIcon />,
     title: 'Real-time job tracking',
     description: "See every job's live status on a Kanban board. Know the moment a clean starts, progresses, or wraps up.",
   },
   {
-    icon: '📸',
+    icon: <CameraIcon />,
     title: 'Photo proof of work',
     description: 'Crew attach photos to checklist items. Clients get visual evidence that every task was completed properly.',
   },
   {
-    icon: '👥',
+    icon: <UsersIcon />,
     title: 'Crew management',
     description: 'Invite staff by email, assign them to jobs, and track completion — all from one place.',
   },
   {
-    icon: '📄',
+    icon: <FileTextIcon />,
     title: 'Client reports',
     description: 'Completion reports are automatically emailed to clients after each job with a full checklist and photos.',
   },
   {
-    icon: '💳',
+    icon: <CreditCardIcon />,
     title: 'Invoicing',
     description: 'Create and send Stripe-powered invoices directly from the platform. Clients pay online, you get notified.',
   },
@@ -454,23 +527,23 @@ const stats = [
   { value: '24/7', label: 'Real-time visibility' },
 ]
 
-const supportOptions = [
+const supportOptions: { icon: ReactNode; title: string; description: string; action: string | null; href: string }[] = [
   {
-    icon: '✉️',
+    icon: <MailIcon />,
     title: 'Email support',
     description: "Send us a message and we'll get back to you within one business day — usually sooner.",
     action: 'Send a message',
     href: 'mailto:support@nimbus.app',
   },
   {
-    icon: '📖',
+    icon: <BookIcon />,
     title: 'Documentation',
     description: 'Step-by-step guides for setting up your company, inviting crew, scheduling jobs, and more.',
     action: null,
     href: '#',
   },
   {
-    icon: '🚀',
+    icon: <PhoneIcon />,
     title: 'Onboarding call',
     description: "New to Nimbus? Book a 20-minute call and we'll walk you through everything live.",
     action: 'Book a call',
