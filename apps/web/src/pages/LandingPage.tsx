@@ -18,6 +18,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen font-plex uppercase tracking-widest text-gray-900 dark:text-gray-100" style={{ wordSpacing: '-0.3em' }}>
       <ShaderBackground isDark={theme === 'dark'} />
+      <div className="pointer-events-none fixed inset-0 z-[-1] bg-white/60 dark:bg-black/60" />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/90">
