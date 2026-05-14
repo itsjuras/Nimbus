@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useRef, type ReactNode } from 'react'
 import { useTheme } from '../hooks/useTheme'
 import { ShaderBackground } from '../components/ui/shader-background'
+import { GlowCard } from '../components/ui/glow-card'
 
 export default function LandingPage() {
   const { theme, toggle } = useTheme()
@@ -110,13 +111,13 @@ export default function LandingPage() {
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
-              <div key={f.title} className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <GlowCard key={f.title} customSize glowColor="blue" className="p-6 w-full h-auto aspect-auto">
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-lg dark:bg-gray-700">
                   {f.icon}
                 </div>
                 <h3 className="mb-2 font-semibold">{f.title}</h3>
                 <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">{f.description}</p>
-              </div>
+              </GlowCard>
             ))}
           </div>
         </div>
@@ -250,10 +251,10 @@ export default function LandingPage() {
 
             <div className="grid grid-cols-2 gap-4">
               {stats.map((s) => (
-                <div key={s.label} className="flex flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+                <GlowCard key={s.label} customSize glowColor="blue" className="w-full h-auto aspect-auto flex flex-col items-center justify-center p-6 text-center">
                   <p className="text-3xl font-bold">{s.value}</p>
                   <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
-                </div>
+                </GlowCard>
               ))}
             </div>
           </div>
@@ -276,14 +277,14 @@ export default function LandingPage() {
             </a>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 dark:border-gray-700 dark:bg-gray-900">
+          <div className="p-8">
             <h3 className="mb-8 text-xl font-bold">Common questions</h3>
-            <div className="grid gap-8 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               {faqs.map((faq) => (
-                <div key={faq.q}>
+                <GlowCard key={faq.q} customSize glowColor="blue" className="w-full h-auto aspect-auto p-5">
                   <p className="mb-2 text-sm font-semibold">{faq.q}</p>
                   <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">{faq.a}</p>
-                </div>
+                </GlowCard>
               ))}
             </div>
           </div>
