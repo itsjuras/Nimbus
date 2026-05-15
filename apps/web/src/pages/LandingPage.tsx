@@ -75,10 +75,10 @@ export default function LandingPage() {
 
       {/* ── Hero — transparent so shader shows through ─────────────────────── */}
       <section className="flex min-h-[90vh] flex-col items-center justify-center px-6 text-center">
-        <div className="mb-12 inline-flex items-center gap-2.5 rounded-full border border-gray-300/60 bg-white/60 px-5 py-2 text-xs font-medium tracking-widest text-gray-500 shadow-sm backdrop-blur-sm dark:border-gray-700/60 dark:bg-gray-900/60 dark:text-gray-400">
+        <GlowCard customSize glowColor="blue" radius={999} className="mb-12 inline-flex w-auto h-auto aspect-auto items-center gap-2.5 !rounded-full px-5 py-2 text-xs font-medium tracking-widest text-gray-500 dark:text-gray-400">
           <span className="h-1.5 w-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
           Built for commercial cleaning companies
-        </div>
+        </GlowCard>
 
         <h1 className="mx-auto max-w-5xl text-5xl font-bold leading-[1.05] text-gray-950 dark:text-gray-50 md:text-6xl lg:text-[5.5rem]">
           Run your cleaning business without the chaos

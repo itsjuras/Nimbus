@@ -8,6 +8,7 @@ interface GlowCardProps {
   width?: string | number
   height?: string | number
   customSize?: boolean
+  radius?: number
 }
 
 const glowColorMap = {
@@ -128,6 +129,7 @@ export function GlowCard({
   width,
   height,
   customSize = false,
+  radius = 14,
 }: GlowCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
 
@@ -144,7 +146,7 @@ export function GlowCard({
     const styles: React.CSSProperties & Record<string, string | number> = {
       '--base': base,
       '--spread': spread,
-      '--radius': '14',
+      '--radius': radius,
       '--border': '3',
       '--backdrop': 'hsl(0 0% 60% / 0.12)',
       '--backup-border': 'var(--backdrop)',
@@ -169,7 +171,7 @@ export function GlowCard({
     if (width !== undefined) styles.width = typeof width === 'number' ? `${width}px` : width
     if (height !== undefined) styles.height = typeof height === 'number' ? `${height}px` : height
     return styles
-  }, [base, spread, width, height])
+  }, [base, spread, radius, width, height])
 
   return (
     <div
