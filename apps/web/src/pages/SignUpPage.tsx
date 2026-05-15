@@ -6,6 +6,7 @@ import { api } from '../lib/api'
 import { supabase } from '../lib/supabase'
 import { useTheme } from '../hooks/useTheme'
 import { ShaderBackground } from '../components/ui/shader-background'
+import NimbusSymbolLogo from '../assets/NimbusSymbolLogo.png'
 
 export default function SignUpPage() {
   const navigate = useNavigate()
@@ -62,11 +63,15 @@ export default function SignUpPage() {
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-md">
 
-          <div className="mb-8 text-center">
-            <Link to="/" className="text-2xl font-bold tracking-widest text-gray-900 dark:text-gray-100">
-              Nimbus
+          <div className="mb-8 flex flex-col items-center gap-3">
+            <Link to="/">
+              <img
+                src={NimbusSymbolLogo}
+                alt="Nimbus"
+                className="h-16 w-auto animate-pulse-glow"
+              />
             </Link>
-            <p className="mt-2 text-xs font-medium tracking-widest text-gray-400 dark:text-gray-500">
+            <p className="text-xs font-medium tracking-widest text-gray-400 dark:text-gray-500">
               Set up your cleaning company
             </p>
           </div>

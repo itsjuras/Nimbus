@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(100, 160, 255, 0.7)) drop-shadow(0 0 28px rgba(80, 140, 255, 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(100, 160, 255, 1)) drop-shadow(0 0 50px rgba(80, 140, 255, 0.6));
+  }
+}

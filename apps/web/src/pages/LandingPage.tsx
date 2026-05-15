@@ -3,6 +3,8 @@ import { useRef, useCallback, type ReactNode } from 'react'
 import { useTheme } from '../hooks/useTheme'
 import { ShaderBackground } from '../components/ui/shader-background'
 import { GlowCard } from '../components/ui/glow-card'
+import NimbusTextLogo from '../assets/NimbusTextLogo.png'
+import NimbusSymbolLogo from '../assets/NimbusSymbolLogo.png'
 
 export default function LandingPage() {
   const { theme, toggle } = useTheme()
@@ -23,7 +25,7 @@ export default function LandingPage() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/90">
         <div className="mx-auto grid h-16 max-w-7xl grid-cols-3 items-center px-10">
-          <span className="text-xl font-bold uppercase tracking-widest">Nimbus</span>
+          <img src={NimbusTextLogo} alt="Nimbus" className="h-5 w-auto" />
 
           <nav className="hidden items-center justify-center gap-8 md:flex">
             {[
@@ -75,10 +77,12 @@ export default function LandingPage() {
 
       {/* ── Hero — transparent so shader shows through ─────────────────────── */}
       <section className="flex min-h-[90vh] flex-col items-center justify-center px-6 text-center">
-        <GlowCard customSize glowColor="blue" radius={999} className="mb-12 inline-flex w-auto h-auto aspect-auto items-center gap-2.5 !rounded-full px-5 py-2 text-xs font-medium tracking-widest text-gray-500 dark:text-gray-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
-          Built for commercial cleaning companies
-        </GlowCard>
+        <img
+          src={NimbusSymbolLogo}
+          alt="Nimbus"
+          className="mb-12 h-20 w-auto animate-pulse-glow"
+          style={{ filter: 'drop-shadow(0 0 12px rgba(100, 160, 255, 0.8)) drop-shadow(0 0 32px rgba(80, 140, 255, 0.4))' }}
+        />
 
         <h1 className="mx-auto max-w-5xl text-5xl font-bold leading-[1.05] text-gray-950 dark:text-gray-50 md:text-6xl lg:text-[5.5rem]">
           Run your cleaning business without the chaos
@@ -321,7 +325,7 @@ export default function LandingPage() {
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <footer className="border-t border-gray-100 bg-white/90 px-6 py-10 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/90">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 md:flex-row">
-          <span className="text-sm font-bold">Nimbus</span>
+          <img src={NimbusSymbolLogo} alt="Nimbus" className="h-8 w-auto" />
           <p className="text-xs text-gray-500">
             © {new Date().getFullYear()} Nimbus. Built for commercial cleaning companies.
           </p>
@@ -397,31 +401,6 @@ function CreditCardIcon() {
   )
 }
 
-function MailIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-      <polyline points="22,6 12,13 2,6" />
-    </svg>
-  )
-}
-
-function BookIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-    </svg>
-  )
-}
-
-function PhoneIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.42 2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-    </svg>
-  )
-}
 
 // ── Theme icons ───────────────────────────────────────────────────────────────
 
@@ -529,29 +508,6 @@ const stats = [
   { value: '24/7', label: 'Real-time visibility' },
 ]
 
-const supportOptions: { icon: ReactNode; title: string; description: string; action: string | null; href: string }[] = [
-  {
-    icon: <MailIcon />,
-    title: 'Email support',
-    description: "Send us a message and we'll get back to you within one business day — usually sooner.",
-    action: 'Send a message',
-    href: 'mailto:support@nimbus.app',
-  },
-  {
-    icon: <BookIcon />,
-    title: 'Documentation',
-    description: 'Step-by-step guides for setting up your company, inviting crew, scheduling jobs, and more.',
-    action: null,
-    href: '#',
-  },
-  {
-    icon: <PhoneIcon />,
-    title: 'Onboarding call',
-    description: "New to Nimbus? Book a 20-minute call and we'll walk you through everything live.",
-    action: 'Book a call',
-    href: 'mailto:support@nimbus.app?subject=Onboarding call request',
-  },
-]
 
 const faqs = [
   {
