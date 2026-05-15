@@ -8,6 +8,7 @@ export function useInvoices() {
   return useQuery({
     queryKey: INVOICES_KEY,
     queryFn: () => api.get<Invoice[]>('/api/v1/invoices'),
+    retry: false,
   })
 }
 

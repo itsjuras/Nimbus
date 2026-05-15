@@ -78,7 +78,7 @@ export default function CrewDetailPage() {
             </div>
             <div>
               <p className="font-semibold text-gray-900 dark:text-gray-100 normal-case tracking-normal">{member.fullName}</p>
-              <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${ROLE_BADGE[member.role]}`}>
+              <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium uppercase ${ROLE_BADGE[member.role]}`}>
                 {member.role}
               </span>
             </div>

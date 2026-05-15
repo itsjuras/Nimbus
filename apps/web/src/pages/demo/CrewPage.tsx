@@ -54,6 +54,7 @@ export default function DemoCrewPage() {
               <th className="px-6 py-3">Phone</th>
               <th className="px-6 py-3">Email</th>
               <th className="px-6 py-3">Jobs completed</th>
+              <th className="px-6 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -68,13 +69,16 @@ export default function DemoCrewPage() {
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${ROLE_BADGE[member.role]}`}>
+                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium uppercase ${ROLE_BADGE[member.role]}`}>
                     {member.role}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal">{member.phone}</td>
                 <td className="px-6 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal">{member.email}</td>
                 <td className="px-6 py-4 font-medium text-gray-700 dark:text-gray-300 normal-case tracking-normal">{jobCountFor(member.id)}</td>
+                <td className="px-6 py-4 text-right">
+                  <span className="font-medium text-gray-900 dark:text-gray-100">View</span>
+                </td>
               </tr>
             ))}
           </tbody>
