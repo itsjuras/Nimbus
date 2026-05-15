@@ -1,55 +1,86 @@
 import { Link } from 'react-router-dom'
+import { useTheme } from '../../hooks/useTheme'
 import { JOBS, CLIENTS, getClient, formatDate, type JobStatus } from './_data'
 
-const COLUMNS: { status: JobStatus; label: string; color: string; dot: string }[] = [
-  { status: 'scheduled', label: 'Scheduled', color: 'bg-gray-50 border-gray-200', dot: 'bg-gray-300' },
-  { status: 'in_progress', label: 'In Progress', color: 'bg-gray-100 border-gray-300', dot: 'bg-gray-600' },
-  { status: 'completed', label: 'Completed', color: 'bg-white border-gray-200', dot: 'bg-gray-900' },
-  { status: 'missed', label: 'Missed', color: 'bg-gray-50 border-gray-200', dot: 'bg-gray-300' },
+const COLUMNS: { status: JobStatus; label: string; color: string; darkColor: string; dot: string; darkDot: string }[] = [
+  { status: 'scheduled', label: 'Scheduled', color: 'bg-gray-50 border-gray-200', darkColor: 'dark:bg-gray-800/60 dark:border-gray-700', dot: 'bg-gray-300', darkDot: 'dark:bg-gray-600' },
+  { status: 'in_progress', label: 'In Progress', color: 'bg-gray-100 border-gray-300', darkColor: 'dark:bg-gray-800 dark:border-gray-600', dot: 'bg-gray-600', darkDot: 'dark:bg-gray-400' },
+  { status: 'completed', label: 'Completed', color: 'bg-white border-gray-200', darkColor: 'dark:bg-gray-900 dark:border-gray-700', dot: 'bg-gray-900', darkDot: 'dark:bg-gray-200' },
+  { status: 'missed', label: 'Missed', color: 'bg-gray-50 border-gray-200', darkColor: 'dark:bg-gray-800/60 dark:border-gray-700', dot: 'bg-gray-300', darkDot: 'dark:bg-gray-600' },
 ]
 
 export default function DemoDashboardPage() {
+  const { theme, toggle } = useTheme()
+
   const byStatus = (status: JobStatus) =>
     JOBS.filter((j) => j.status === status).sort(
       (a, b) => a.scheduledAt.getTime() - b.scheduledAt.getTime(),
     )
 
-  const todayCount = JOBS.filter((j) => j.status === 'in_progress').length
+  const today = new Date().toDateString()
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+
+  const todayCount = JOBS.filter((j) => j.scheduledAt.toDateString() === today).length
+  const liveCount = byStatus('in_progress').length
+  const weekCount = JOBS.filter(
+    (j) => j.status === 'completed' && j.scheduledAt.getTime() >= weekAgo,
+  ).length
+  const clientCount = CLIENTS.length
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-gray-200 bg-white px-8 py-4">
-        <div className="flex items-baseline justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500">
-            {todayCount} job{todayCount !== 1 ? 's' : ''} active today
-          </p>
+      <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-8 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+          <button
+            onClick={toggle}
+            aria-label="Toggle dark mode"
+            className={`relative flex h-8 w-16 shrink-0 items-center rounded-full transition-colors duration-300 ${
+              theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+            }`}
+          >
+            <span
+              className={`absolute flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-500 shadow transition-transform duration-300 ${
+                theme === 'dark' ? 'translate-x-9' : 'translate-x-1'
+              }`}
+            >
+              {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
+            </span>
+          </button>
         </div>
+
         <div className="mt-3 flex gap-6">
-          {COLUMNS.map(({ status, label, dot }) => (
+          {COLUMNS.map(({ status, label, dot, darkDot }) => (
             <div key={status} className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${dot}`} />
-              <span className="text-sm text-gray-500">{label}</span>
-              <span className="text-sm font-semibold text-gray-900">{byStatus(status).length}</span>
+              <span className={`h-2 w-2 rounded-full ${dot} ${darkDot}`} />
+              <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{byStatus(status).length}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex flex-1 gap-4 overflow-x-auto p-6">
-        {COLUMNS.map(({ status, label, color }) => {
+      <div className="grid grid-cols-4 gap-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950/50 px-8 py-5">
+        <StatCard label="Today's Jobs" value={todayCount} />
+        <StatCard label="Live Now" value={liveCount} accent={liveCount > 0} />
+        <StatCard label="Done This Week" value={weekCount} />
+        <StatCard label="Clients" value={clientCount} />
+      </div>
+
+      <div className="flex flex-1 gap-4 p-6">
+        {COLUMNS.map(({ status, label, color, darkColor }) => {
           const jobs = byStatus(status)
           return (
-            <div key={status} className="flex w-72 shrink-0 flex-col">
+            <div key={status} className="flex flex-1 flex-col">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-700">{label}</h2>
-                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
+                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{label}</h2>
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 px-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 tracking-normal leading-none">
                   {jobs.length}
                 </span>
               </div>
-              <div className={`flex-1 rounded-xl border p-3 ${color}`}>
+              <div className={`flex-1 rounded-xl border p-3 ${color} ${darkColor}`}>
                 {jobs.length === 0 ? (
-                  <p className="py-6 text-center text-xs text-gray-400">No jobs</p>
+                  <p className="py-6 text-center text-xs text-gray-400 dark:text-gray-600">No jobs</p>
                 ) : (
                   <div className="space-y-3">
                     {jobs.map((job) => {
@@ -58,22 +89,20 @@ export default function DemoDashboardPage() {
                         <Link
                           key={job.id}
                           to={`/demo/jobs/${job.id}`}
-                          className="block rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+                          className="block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm transition-shadow hover:shadow-md"
                         >
-                          <p className="font-semibold leading-tight text-gray-900">
-                            {client?.name ?? '—'}
-                          </p>
-                          <p className="mt-1 text-xs text-gray-500">{formatDate(job.scheduledAt)}</p>
+                          <p className="font-semibold leading-tight text-gray-900 dark:text-gray-100">{client?.name ?? '—'}</p>
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 normal-case tracking-normal">{formatDate(job.scheduledAt)}</p>
                           {job.notes && (
-                            <p className="mt-2 line-clamp-2 text-xs text-gray-400">{job.notes}</p>
+                            <p className="mt-2 line-clamp-2 text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal">{job.notes}</p>
                           )}
                           {job.status === 'in_progress' && (
                             <div className="mt-2 flex items-center gap-1.5">
                               <span className="relative flex h-2 w-2">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-600 opacity-75" />
-                                <span className="relative inline-flex h-2 w-2 rounded-full bg-gray-900" />
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-600 dark:bg-gray-400 opacity-75" />
+                                <span className="relative inline-flex h-2 w-2 rounded-full bg-gray-900 dark:bg-gray-200" />
                               </span>
-                              <span className="text-xs font-medium text-gray-600">Live</span>
+                              <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Live</span>
                             </div>
                           )}
                         </Link>
@@ -87,5 +116,47 @@ export default function DemoDashboardPage() {
         })}
       </div>
     </div>
+  )
+}
+
+function StatCard({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
+  return (
+    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4">
+      <p className="text-xs font-medium text-gray-400 dark:text-gray-500">{label}</p>
+      <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+      {accent && value > 0 && (
+        <div className="mt-1.5 flex items-center gap-1.5">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-600 dark:bg-gray-400 opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-gray-900 dark:bg-gray-200" />
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">in progress</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SunIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4" />
+      <line x1="12" y1="2" x2="12" y2="6" />
+      <line x1="12" y1="18" x2="12" y2="22" />
+      <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
+      <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+      <line x1="2" y1="12" x2="6" y2="12" />
+      <line x1="18" y1="12" x2="22" y2="12" />
+      <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
+      <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
+    </svg>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
   )
 }
