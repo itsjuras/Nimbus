@@ -17,6 +17,7 @@ const JobDetailPage = lazy(() => import('./pages/owner/JobDetailPage'))
 const ClientsPage = lazy(() => import('./pages/owner/ClientsPage'))
 const ClientDetailPage = lazy(() => import('./pages/owner/ClientDetailPage'))
 const CrewPage = lazy(() => import('./pages/owner/CrewPage'))
+const CrewDetailPage = lazy(() => import('./pages/owner/CrewDetailPage'))
 const InvoicesPage = lazy(() => import('./pages/owner/InvoicesPage'))
 
 // Crew pages
@@ -30,6 +31,7 @@ const DemoJobDetailPage = lazy(() => import('./pages/demo/JobDetailPage'))
 const DemoClientsPage = lazy(() => import('./pages/demo/ClientsPage'))
 const DemoClientDetailPage = lazy(() => import('./pages/demo/ClientDetailPage'))
 const DemoCrewPage = lazy(() => import('./pages/demo/CrewPage'))
+const DemoCrewDetailPage = lazy(() => import('./pages/demo/CrewDetailPage'))
 const DemoInvoicesPage = lazy(() => import('./pages/demo/InvoicesPage'))
 
 const Spinner = () => (
@@ -56,6 +58,7 @@ export default function App() {
             <Route path="/owner/clients" element={<ClientsPage />} />
             <Route path="/owner/clients/:id" element={<ClientDetailPage />} />
             <Route path="/owner/crew" element={<CrewPage />} />
+            <Route path="/owner/crew/:id" element={<CrewDetailPage />} />
             <Route path="/owner/invoices" element={<InvoicesPage />} />
           </Route>
         </Route>
@@ -76,6 +79,7 @@ export default function App() {
           <Route path="/demo/clients" element={<DemoClientsPage />} />
           <Route path="/demo/clients/:id" element={<DemoClientDetailPage />} />
           <Route path="/demo/crew" element={<DemoCrewPage />} />
+          <Route path="/demo/crew/:id" element={<DemoCrewDetailPage />} />
           <Route path="/demo/invoices" element={<DemoInvoicesPage />} />
         </Route>
 
