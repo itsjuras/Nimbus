@@ -60,7 +60,7 @@ export default function JobsPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowForm((v) => !v)}
-            className="rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200"
+            className="rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold uppercase text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200"
           >
             {showForm ? 'Cancel' : 'Schedule job'}
           </button>

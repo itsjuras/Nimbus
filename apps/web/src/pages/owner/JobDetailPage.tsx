@@ -88,7 +88,7 @@ export default function JobDetailPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}>
+          <span className={`inline-flex h-8 items-center rounded-full px-4 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}>
             {job.status.replace('_', ' ')}
           </span>
 
@@ -102,7 +102,7 @@ export default function JobDetailPage() {
               </button>
               <button
                 onClick={onDiscard}
-                className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-semibold uppercase text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 Discard
               </button>
@@ -110,7 +110,7 @@ export default function JobDetailPage() {
                 form="job-edit-form"
                 type="submit"
                 disabled={isSubmitting || !isDirty}
-                className="rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold uppercase text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Saving…' : 'Save changes'}
               </button>
@@ -118,7 +118,7 @@ export default function JobDetailPage() {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200"
+              className="rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold uppercase text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200"
             >
               Edit job
             </button>

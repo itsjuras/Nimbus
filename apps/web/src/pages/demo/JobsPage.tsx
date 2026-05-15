@@ -35,7 +35,7 @@ export default function DemoJobsPage() {
           <button
             disabled
             title="Not available in demo"
-            className="cursor-not-allowed rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 opacity-50"
+            className="cursor-not-allowed rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold uppercase text-white dark:text-gray-900 opacity-50"
           >
             Schedule job
           </button>

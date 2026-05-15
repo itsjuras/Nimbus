@@ -50,13 +50,13 @@ export default function DemoJobDetailPage() {
           <p className="text-sm text-gray-500 dark:text-gray-400 normal-case tracking-normal">{formatDate(job.scheduledAt)}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}>
+          <span className={`inline-flex h-8 items-center rounded-full px-4 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}>
             {job.status.replace('_', ' ')}
           </span>
           <button
             disabled
             title="Not available in demo"
-            className="cursor-not-allowed rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 opacity-40"
+            className="cursor-not-allowed rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold uppercase text-white dark:text-gray-900 opacity-40"
           >
             Edit job
           </button>
