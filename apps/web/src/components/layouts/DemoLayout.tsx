@@ -7,6 +7,7 @@ import NimbusSymbolLogo from '../../assets/NimbusSymbolLogo.png'
 const NAV = [
   { to: '/demo', label: 'Dashboard', end: true },
   { to: '/demo/jobs', label: 'Jobs', end: false },
+  { to: '/demo/calendar', label: 'Calendar', end: false },
   { to: '/demo/clients', label: 'Clients', end: false },
   { to: '/demo/crew', label: 'Crew', end: false },
   { to: '/demo/invoices', label: 'Invoices', end: false },

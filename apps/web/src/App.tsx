@@ -19,6 +19,7 @@ const ClientDetailPage = lazy(() => import('./pages/owner/ClientDetailPage'))
 const CrewPage = lazy(() => import('./pages/owner/CrewPage'))
 const CrewDetailPage = lazy(() => import('./pages/owner/CrewDetailPage'))
 const InvoicesPage = lazy(() => import('./pages/owner/InvoicesPage'))
+const OwnerCalendarPage = lazy(() => import('./pages/owner/CalendarPage'))
 
 // Crew pages
 const CrewJobsPage = lazy(() => import('./pages/crew/JobsPage'))
@@ -33,6 +34,7 @@ const DemoClientDetailPage = lazy(() => import('./pages/demo/ClientDetailPage'))
 const DemoCrewPage = lazy(() => import('./pages/demo/CrewPage'))
 const DemoCrewDetailPage = lazy(() => import('./pages/demo/CrewDetailPage'))
 const DemoInvoicesPage = lazy(() => import('./pages/demo/InvoicesPage'))
+const DemoCalendarPage = lazy(() => import('./pages/demo/CalendarPage'))
 
 const Spinner = () => (
   <div className="flex h-screen items-center justify-center">
@@ -60,6 +62,7 @@ export default function App() {
             <Route path="/owner/crew" element={<CrewPage />} />
             <Route path="/owner/crew/:id" element={<CrewDetailPage />} />
             <Route path="/owner/invoices" element={<InvoicesPage />} />
+            <Route path="/owner/calendar" element={<OwnerCalendarPage />} />
           </Route>
         </Route>
 
@@ -81,6 +84,7 @@ export default function App() {
           <Route path="/demo/crew" element={<DemoCrewPage />} />
           <Route path="/demo/crew/:id" element={<DemoCrewDetailPage />} />
           <Route path="/demo/invoices" element={<DemoInvoicesPage />} />
+          <Route path="/demo/calendar" element={<DemoCalendarPage />} />
         </Route>
 
         {/* Landing */}
