@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useRef, useCallback, type ReactNode } from 'react'
+import { useRef, useCallback, useState, useEffect, type ReactNode } from 'react'
 import { useTheme } from '../hooks/useTheme'
 import { ShaderBackground } from '../components/ui/shader-background'
 import { GlowCard } from '../components/ui/glow-card'
@@ -17,6 +17,28 @@ export default function LandingPage() {
     ref.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
+  const mockupContainerRef = useRef<HTMLDivElement>(null)
+  const mockupInnerRef = useRef<HTMLDivElement>(null)
+  const [mockupScale, setMockupScale] = useState(1)
+  const [mockupHeight, setMockupHeight] = useState<number | null>(null)
+  const MOCKUP_WIDTH = 1024
+
+  useEffect(() => {
+    const container = mockupContainerRef.current
+    const inner = mockupInnerRef.current
+    if (!container || !inner) return
+    const naturalHeight = inner.getBoundingClientRect().height
+    const ro = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (!entry) return
+      const scale = Math.min(1, entry.contentRect.width / MOCKUP_WIDTH)
+      setMockupScale(scale)
+      setMockupHeight(naturalHeight * scale)
+    })
+    ro.observe(container)
+    return () => ro.disconnect()
+  }, [])
+
   return (
     <div className="min-h-screen font-plex uppercase tracking-widest text-gray-900 dark:text-gray-100" style={{ wordSpacing: '-0.3em' }}>
       <ShaderBackground isDark={theme === 'dark'} />
@@ -24,10 +46,10 @@ export default function LandingPage() {
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/90">
-        <div className="mx-auto grid h-16 max-w-7xl grid-cols-3 items-center px-10">
-          <img src={NimbusTextLogo} alt="Nimbus" className="h-5 w-auto" />
+        <div className="mx-auto flex h-16 max-w-7xl items-center px-4 sm:px-6 md:px-10">
+          <img src={NimbusTextLogo} alt="Nimbus" className="h-5 w-auto shrink-0" />
 
-          <nav className="hidden items-center justify-center gap-8 md:flex">
+          <nav className="hidden items-center justify-center gap-8 lg:flex lg:flex-1">
             {[
               { label: 'Product', ref: productRef },
               { label: 'Dashboard', ref: dashboardRef },
@@ -44,18 +66,17 @@ export default function LandingPage() {
             ))}
           </nav>
 
-          <div className="flex items-center justify-end gap-5">
+          <div className="ml-auto flex items-center gap-3 sm:gap-5">
             <Link to="/login" className="text-sm uppercase tracking-widest text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
               Sign in
             </Link>
             <Link
               to="/signup"
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+              className="rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 sm:px-4"
             >
               Get started
             </Link>
 
-            {/* Theme toggle — rightmost */}
             <button
               onClick={toggle}
               aria-label="Toggle dark mode"
@@ -139,7 +160,21 @@ export default function LandingPage() {
           </div>
 
           {/* Browser mockup */}
-          <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-gray-200 shadow-2xl shadow-gray-200 dark:border-gray-700 dark:shadow-gray-950">
+          <div
+            ref={mockupContainerRef}
+            className="relative mx-auto max-w-5xl"
+            style={mockupHeight != null ? { height: mockupHeight } : undefined}
+          >
+          <div
+            ref={mockupInnerRef}
+            className="overflow-hidden rounded-2xl border border-gray-200 shadow-2xl shadow-gray-200 dark:border-gray-700 dark:shadow-gray-950"
+            style={{
+              width: MOCKUP_WIDTH,
+              transformOrigin: 'top left',
+              transform: `scale(${mockupScale})`,
+              ...(mockupHeight != null ? { position: 'absolute' as const, top: 0, left: 0 } : {}),
+            }}
+          >
             {/* Browser chrome — 3-col grid so URL bar is truly centered */}
             <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
               <div className="flex gap-1.5">
@@ -221,6 +256,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+          </div>
           </div>
 
           <div className="mt-10 text-center">
