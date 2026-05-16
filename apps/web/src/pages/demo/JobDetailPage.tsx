@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { Link, useParams } from 'react-router-dom'
 import { JOBS, getClient, getCrew, formatDate, type DemoChecklistItem, type JobStatus } from './_data'
 import { useTheme } from '../../hooks/useTheme'
@@ -41,7 +42,7 @@ export default function DemoJobDetailPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <Link to="/demo/jobs" className="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
             ← Jobs
@@ -49,8 +50,8 @@ export default function DemoJobDetailPage() {
           <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100 normal-case tracking-normal">{client?.name ?? '—'}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 normal-case tracking-normal">{formatDate(job.scheduledAt)}</p>
         </div>
-        <div className="flex items-center gap-3">
-          <span className={`inline-flex h-8 items-center rounded-full px-4 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className={`inline-flex h-8 whitespace-nowrap items-center rounded-full px-4 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}>
             {job.status.replace('_', ' ')}
           </span>
           <button
@@ -60,6 +61,7 @@ export default function DemoJobDetailPage() {
           >
             Edit job
           </button>
+          <SidebarToggle />
           <button
             onClick={toggle}
             aria-label="Toggle dark mode"

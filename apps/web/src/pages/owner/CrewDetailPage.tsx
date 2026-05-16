@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
+import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { useTheme } from '../../hooks/useTheme'
 import { useCrewMembers } from '../../hooks/useCrew'
 import type { UserRole } from '@nimbus/shared'
@@ -36,42 +37,36 @@ export default function CrewDetailPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <Link to="/owner/crew" className="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
             ← Crew
           </Link>
           <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100 normal-case tracking-normal">{member.fullName}</h1>
         </div>
-        <button
-          onClick={toggle}
-          aria-label="Toggle dark mode"
-          className={`relative flex h-8 w-16 shrink-0 self-start items-center rounded-full transition-colors duration-300 ${
-            theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
-          }`}
-        >
-          <span
-            className={`absolute flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-500 shadow transition-transform duration-300 ${
-              theme === 'dark' ? 'translate-x-9' : 'translate-x-1'
+        <div className="flex flex-wrap items-center gap-3">
+          <SidebarToggle />
+          <button
+            onClick={toggle}
+            aria-label="Toggle dark mode"
+            className={`relative flex h-8 w-16 shrink-0 items-center rounded-full transition-colors duration-300 ${
+              theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
             }`}
           >
-            {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
-          </span>
-        </button>
+            <span
+              className={`absolute flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-500 shadow transition-transform duration-300 ${
+                theme === 'dark' ? 'translate-x-9' : 'translate-x-1'
+              }`}
+            >
+              {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
+            </span>
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 lg:col-span-2">
-          <div className="border-b border-gray-200 dark:border-gray-800 px-6 py-4">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Job history</h2>
-          </div>
-          <p className="p-8 text-center text-sm text-gray-400 dark:text-gray-500 normal-case tracking-normal">
-            Job history per crew member coming soon.
-          </p>
-        </div>
-
-        <div className="self-start space-y-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+        <div className="self-start space-y-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 lg:order-last">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-xl font-semibold text-gray-700 dark:text-gray-300">
               {member.fullName.charAt(0).toUpperCase()}
@@ -90,6 +85,15 @@ export default function CrewDetailPage() {
               <p className="mt-0.5 text-sm text-gray-700 dark:text-gray-300 normal-case tracking-normal">{member.phone ?? '—'}</p>
             </div>
           </div>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 lg:col-span-2">
+          <div className="border-b border-gray-200 dark:border-gray-800 px-6 py-4">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Job history</h2>
+          </div>
+          <p className="p-8 text-center text-sm text-gray-400 dark:text-gray-500 normal-case tracking-normal">
+            Job history per crew member coming soon.
+          </p>
         </div>
       </div>
     </div>

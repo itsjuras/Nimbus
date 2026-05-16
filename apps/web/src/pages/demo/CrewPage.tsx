@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { CREW, JOBS } from './_data'
 import { useTheme } from '../../hooks/useTheme'
 
@@ -16,8 +17,8 @@ export default function DemoCrewPage() {
     JOBS.filter((j) => j.crewIds.includes(crewId) && j.status === 'completed').length
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Crew</h1>
         <div className="flex items-center gap-3">
           <button
@@ -27,6 +28,7 @@ export default function DemoCrewPage() {
           >
             Invite crew
           </button>
+          <SidebarToggle />
           <button
             onClick={toggle}
             aria-label="Toggle dark mode"
@@ -45,38 +47,38 @@ export default function DemoCrewPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <table className="w-full text-sm">
           <thead className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
             <tr>
-              <th className="px-6 py-3">Name</th>
-              <th className="px-6 py-3">Role</th>
-              <th className="px-6 py-3">Phone</th>
-              <th className="px-6 py-3">Email</th>
-              <th className="px-6 py-3">Jobs completed</th>
-              <th className="px-6 py-3" />
+              <th className="px-4 py-3 sm:px-6">Name</th>
+              <th className="px-4 py-3 sm:px-6">Role</th>
+              <th className="hidden md:table-cell px-4 py-3 sm:px-6">Phone</th>
+              <th className="hidden lg:table-cell px-4 py-3 sm:px-6">Email</th>
+              <th className="hidden lg:table-cell px-4 py-3 sm:px-6">Jobs completed</th>
+              <th className="px-4 py-3 sm:px-6" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {CREW.map((member) => (
               <tr key={member.id} onClick={() => navigate(`/demo/crew/${member.id}`)} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <td className="px-6 py-4">
+                <td className="px-4 py-4 sm:px-6">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300">
                       {member.fullName.charAt(0)}
                     </div>
                     <span className="font-medium text-gray-900 dark:text-gray-100 normal-case tracking-normal">{member.fullName}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-4 sm:px-6">
                   <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium uppercase ${ROLE_BADGE[member.role]}`}>
                     {member.role}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal">{member.phone}</td>
-                <td className="px-6 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal">{member.email}</td>
-                <td className="px-6 py-4 font-medium text-gray-700 dark:text-gray-300 normal-case tracking-normal">{jobCountFor(member.id)}</td>
-                <td className="px-6 py-4 text-right">
+                <td className="hidden md:table-cell px-4 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal sm:px-6">{member.phone}</td>
+                <td className="hidden lg:table-cell px-4 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal sm:px-6">{member.email}</td>
+                <td className="hidden lg:table-cell px-4 py-4 font-medium text-gray-700 dark:text-gray-300 normal-case tracking-normal sm:px-6">{jobCountFor(member.id)}</td>
+                <td className="px-4 py-4 text-right sm:px-6">
                   <span className="font-medium text-gray-900 dark:text-gray-100">View</span>
                 </td>
               </tr>

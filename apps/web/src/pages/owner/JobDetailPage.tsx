@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -78,7 +79,7 @@ export default function JobDetailPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <Link to="/owner/jobs" className="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
             ← Jobs
@@ -87,8 +88,8 @@ export default function JobDetailPage() {
           <p className="text-sm text-gray-500 dark:text-gray-400 normal-case tracking-normal">{job.checklistName}</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className={`inline-flex h-8 items-center rounded-full px-4 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className={`inline-flex h-8 whitespace-nowrap items-center rounded-full px-4 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}>
             {job.status.replace('_', ' ')}
           </span>
 
@@ -124,6 +125,7 @@ export default function JobDetailPage() {
             </button>
           )}
 
+          <SidebarToggle />
           <button
             onClick={toggle}
             aria-label="Toggle dark mode"

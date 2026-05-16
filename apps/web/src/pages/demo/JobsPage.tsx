@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { Link, useNavigate } from 'react-router-dom'
 import { JOBS, getClient, formatDate, type JobStatus } from './_data'
 import { useTheme } from '../../hooks/useTheme'
@@ -28,17 +29,18 @@ export default function DemoJobsPage() {
   )
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Jobs</h1>
-        <div className="flex items-center gap-3">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-4 flex items-center justify-between gap-3 sm:mb-6">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 sm:text-2xl">Jobs</h1>
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             disabled
             title="Not available in demo"
-            className="cursor-not-allowed rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold uppercase text-white dark:text-gray-900 opacity-50"
+            className="shrink-0 cursor-not-allowed rounded-lg bg-gray-900 dark:bg-gray-100 px-3 py-2 text-xs font-semibold uppercase text-white dark:text-gray-900 opacity-50 sm:px-4 sm:text-sm"
           >
             Schedule job
           </button>
+          <SidebarToggle />
           <button
             onClick={toggle}
             aria-label="Toggle dark mode"
@@ -57,12 +59,12 @@ export default function DemoJobsPage() {
         </div>
       </div>
 
-      <div className="mb-4 flex gap-1 border-b border-gray-200 dark:border-gray-800">
+      <div className="mb-4 flex gap-1 overflow-x-auto border-b border-gray-200 dark:border-gray-800">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.label}
             onClick={() => setActiveStatus(tab.value)}
-            className={`px-4 py-2 text-sm font-medium uppercase transition-colors ${
+            className={`shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium uppercase transition-colors sm:px-4 ${
               activeStatus === tab.value
                 ? 'border-b-2 border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -73,15 +75,15 @@ export default function DemoJobsPage() {
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <table className="w-full text-sm">
           <thead className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
             <tr>
-              <th className="px-6 py-3">Client</th>
-              <th className="px-6 py-3">Scheduled</th>
-              <th className="px-6 py-3">Crew</th>
-              <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3" />
+              <th className="px-4 py-3 sm:px-6">Client</th>
+              <th className="px-4 py-3 sm:px-6">Scheduled</th>
+              <th className="hidden sm:table-cell px-4 py-3 sm:px-6">Crew</th>
+              <th className="px-4 py-3 sm:px-6">Status</th>
+              <th className="px-4 py-3 sm:px-6" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -93,7 +95,7 @@ export default function DemoJobsPage() {
                   onClick={() => navigate(`/demo/jobs/${job.id}`)}
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
                 >
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
+                  <td className="px-4 py-4 font-medium text-gray-900 dark:text-gray-100 sm:px-6">
                     <Link
                       to={`/demo/clients/${job.clientId}`}
                       onClick={(e) => e.stopPropagation()}
@@ -102,16 +104,16 @@ export default function DemoJobsPage() {
                       {client?.name ?? '—'}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal">{formatDate(job.scheduledAt)}</td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{job.crewIds.length} assigned</td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal sm:px-6">{formatDate(job.scheduledAt)}</td>
+                  <td className="hidden sm:table-cell px-4 py-4 text-gray-500 dark:text-gray-400 sm:px-6">{job.crewIds.length} assigned</td>
+                  <td className="px-4 py-4 sm:px-6">
                     <span
-                      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}
+                      className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}
                     >
                       {job.status.replace('_', ' ')}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-4 py-4 text-right sm:px-6">
                     <span className="font-medium text-gray-900 dark:text-gray-100">View</span>
                   </td>
                 </tr>

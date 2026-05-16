@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,8 +29,8 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Clients</h1>
         <div className="flex items-center gap-3">
           <button
@@ -38,6 +39,7 @@ export default function ClientsPage() {
           >
             {showForm ? 'Cancel' : 'Add client'}
           </button>
+          <SidebarToggle />
           <button
             onClick={toggle}
             aria-label="Toggle dark mode"
@@ -115,14 +117,14 @@ export default function ClientsPage() {
           <p className="text-gray-500 dark:text-gray-400 normal-case tracking-normal">No clients yet. Add your first one above.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           <table className="w-full text-sm">
             <thead className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
               <tr>
-                <th className="px-6 py-3">Name</th>
-                <th className="px-6 py-3">Contact</th>
-                <th className="px-6 py-3">Address</th>
-                <th className="px-6 py-3" />
+                <th className="px-4 py-3 sm:px-6">Name</th>
+                <th className="hidden md:table-cell px-4 py-3 sm:px-6">Contact</th>
+                <th className="hidden sm:table-cell px-4 py-3 sm:px-6">Address</th>
+                <th className="px-4 py-3 sm:px-6" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -132,17 +134,17 @@ export default function ClientsPage() {
                   onClick={() => navigate(`/owner/clients/${client.id}`)}
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
                 >
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100 normal-case tracking-normal">
+                  <td className="px-4 py-4 font-medium text-gray-900 dark:text-gray-100 normal-case tracking-normal sm:px-6">
                     {client.name}
                   </td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal">
+                  <td className="hidden md:table-cell px-4 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal sm:px-6">
                     {client.contactName ?? '—'}
                     {client.contactEmail && (
                       <span className="ml-1 text-gray-400 dark:text-gray-500">({client.contactEmail})</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal">{client.address ?? '—'}</td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="hidden sm:table-cell px-4 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal sm:px-6">{client.address ?? '—'}</td>
+                  <td className="px-4 py-4 text-right sm:px-6">
                     <span className="mr-3 font-medium text-gray-900 dark:text-gray-100">View</span>
                     <button
                       onClick={(e) => {

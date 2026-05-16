@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { SidebarProvider, useSidebar } from '../../contexts/SidebarContext'
 import NimbusSymbolLogo from '../../assets/NimbusSymbolLogo.png'
 
 const navItems = [
@@ -10,12 +12,51 @@ const navItems = [
   { to: '/owner/invoices', label: 'Invoices' },
 ]
 
-export function OwnerLayout() {
+function OwnerLayoutInner() {
   const { profile, signOut } = useAuth()
+  const { sidebarOpen, toggleSidebar } = useSidebar()
+
+  const closeOnMobile = () => {
+    if (window.innerWidth < 768) toggleSidebar()
+  }
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
+    const onResize = () => {
+      document.body.classList.add('resizing')
+      clearTimeout(timer)
+      timer = setTimeout(() => document.body.classList.remove('resizing'), 150)
+    }
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      clearTimeout(timer)
+    }
+  }, [])
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950 font-plex uppercase tracking-widest" style={{ wordSpacing: '-0.3em' }}>
-      <aside className="flex w-56 flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+
+      {/* Backdrop — mobile only */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm md:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={[
+          'flex flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900',
+          // Mobile: fixed full-width overlay, slide in/out
+          'fixed inset-y-0 left-0 z-50 w-full transition-transform duration-300',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          // Desktop: relative inline, width-based collapse
+          'md:relative md:inset-auto md:z-auto md:translate-x-0 md:shrink-0 md:min-w-0 md:overflow-hidden md:transition-[width]',
+          sidebarOpen ? 'md:w-56' : 'md:w-0',
+        ].join(' ')}
+      >
         <div className="flex h-16 items-center justify-center border-b border-gray-200 dark:border-gray-800 px-6">
           <img src={NimbusSymbolLogo} alt="Nimbus" className="h-8 w-auto animate-pulse-glow" />
         </div>
@@ -25,6 +66,7 @@ export function OwnerLayout() {
             <NavLink
               key={to}
               to={to}
+              onClick={closeOnMobile}
               className={({ isActive }) =>
                 `flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   isActive
@@ -53,5 +95,13 @@ export function OwnerLayout() {
         <Outlet />
       </main>
     </div>
+  )
+}
+
+export function OwnerLayout() {
+  return (
+    <SidebarProvider>
+      <OwnerLayoutInner />
+    </SidebarProvider>
   )
 }

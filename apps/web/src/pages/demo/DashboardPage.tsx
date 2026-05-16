@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { useTheme } from '../../hooks/useTheme'
 import { JOBS, CLIENTS, getClient, formatDate, type JobStatus } from './_data'
 
@@ -28,28 +29,31 @@ export default function DemoDashboardPage() {
   const clientCount = CLIENTS.length
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-8 pt-8 pb-4">
+    <div className="flex flex-col lg:h-full">
+      <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 pt-6 pb-4 sm:px-8 sm:pt-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
-          <button
-            onClick={toggle}
-            aria-label="Toggle dark mode"
-            className={`relative flex h-8 w-16 shrink-0 items-center rounded-full transition-colors duration-300 ${
-              theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
-            }`}
-          >
-            <span
-              className={`absolute flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-500 shadow transition-transform duration-300 ${
-                theme === 'dark' ? 'translate-x-9' : 'translate-x-1'
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 sm:text-2xl">Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <SidebarToggle />
+            <button
+              onClick={toggle}
+              aria-label="Toggle dark mode"
+              className={`relative flex h-8 w-16 shrink-0 items-center rounded-full transition-colors duration-300 ${
+                theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
               }`}
             >
-              {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
-            </span>
-          </button>
+              <span
+                className={`absolute flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-500 shadow transition-transform duration-300 ${
+                  theme === 'dark' ? 'translate-x-9' : 'translate-x-1'
+                }`}
+              >
+                {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
+              </span>
+            </button>
+          </div>
         </div>
 
-        <div className="mt-3 flex gap-6">
+        <div className="mt-3 flex flex-wrap gap-3 sm:gap-6">
           {COLUMNS.map(({ status, label, dot, darkDot }) => (
             <div key={status} className="flex items-center gap-2">
               <span className={`h-2 w-2 rounded-full ${dot} ${darkDot}`} />
@@ -60,25 +64,25 @@ export default function DemoDashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950/50 px-8 py-5">
+      <div className="grid grid-cols-2 gap-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950/50 px-4 py-4 sm:grid-cols-4 sm:gap-4 sm:px-8 sm:py-5">
         <StatCard label="Today's Jobs" value={todayCount} />
         <StatCard label="Live Now" value={liveCount} accent={liveCount > 0} />
         <StatCard label="Done This Week" value={weekCount} />
         <StatCard label="Clients" value={clientCount} />
       </div>
 
-      <div className="flex flex-1 gap-4 p-6">
+      <div className="grid grid-cols-2 gap-3 p-4 sm:p-5 lg:flex lg:flex-1 lg:gap-4 lg:p-6">
         {COLUMNS.map(({ status, label, color, darkColor }) => {
           const jobs = byStatus(status)
           return (
-            <div key={status} className="flex flex-1 flex-col">
+            <div key={status} className="flex flex-col lg:flex-1 lg:min-w-0">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{label}</h2>
                 <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 px-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 tracking-normal leading-none">
                   {jobs.length}
                 </span>
               </div>
-              <div className={`flex-1 rounded-xl border p-3 ${color} ${darkColor}`}>
+              <div className={`min-h-36 rounded-xl border p-3 lg:flex-1 ${color} ${darkColor}`}>
                 {jobs.length === 0 ? (
                   <p className="py-6 text-center text-xs text-gray-400 dark:text-gray-600">No jobs</p>
                 ) : (
@@ -89,7 +93,7 @@ export default function DemoDashboardPage() {
                         <Link
                           key={job.id}
                           to={`/demo/jobs/${job.id}`}
-                          className="block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm transition-shadow hover:shadow-md"
+                          className="block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm transition-shadow hover:shadow-md sm:p-4"
                         >
                           <p className="font-semibold leading-tight text-gray-900 dark:text-gray-100">{client?.name ?? '—'}</p>
                           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 normal-case tracking-normal">{formatDate(job.scheduledAt)}</p>
@@ -121,9 +125,9 @@ export default function DemoDashboardPage() {
 
 function StatCard({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 sm:px-5 sm:py-4">
       <p className="text-xs font-medium text-gray-400 dark:text-gray-500">{label}</p>
-      <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+      <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100 sm:text-3xl">{value}</p>
       {accent && value > 0 && (
         <div className="mt-1.5 flex items-center gap-1.5">
           <span className="relative flex h-1.5 w-1.5">

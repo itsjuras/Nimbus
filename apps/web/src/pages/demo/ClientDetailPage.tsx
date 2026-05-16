@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CLIENTS, CHECKLISTS, JOBS, getClient, formatDate, type ChecklistItem } from './_data'
 import { useTheme } from '../../hooks/useTheme'
@@ -72,15 +73,15 @@ export default function DemoClientDetailPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <Link to="/demo/clients" className="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
             ← Clients
           </Link>
           <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100 normal-case tracking-normal">{client.name}</h1>
         </div>
-        <div className="flex items-center gap-3 self-start">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             disabled
             title="Not available in demo"
@@ -88,6 +89,7 @@ export default function DemoClientDetailPage() {
           >
             Edit client
           </button>
+          <SidebarToggle />
           <button
             onClick={toggle}
             aria-label="Toggle dark mode"
@@ -232,17 +234,17 @@ export default function DemoClientDetailPage() {
       )}
 
       {activeTab === 'history' && (
-        <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           {clientJobs.length === 0 ? (
             <p className="p-8 text-center text-sm text-gray-400 dark:text-gray-500 normal-case tracking-normal">No job history for this client.</p>
           ) : (
             <table className="w-full text-sm">
               <thead className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                 <tr>
-                  <th className="px-6 py-3">Date</th>
-                  <th className="px-6 py-3">Status</th>
-                  <th className="px-6 py-3">Crew</th>
-                  <th className="px-6 py-3" />
+                  <th className="px-4 py-3 sm:px-6">Date</th>
+                  <th className="px-4 py-3 sm:px-6">Status</th>
+                  <th className="hidden sm:table-cell px-4 py-3 sm:px-6">Crew</th>
+                  <th className="px-4 py-3 sm:px-6" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -252,14 +254,14 @@ export default function DemoClientDetailPage() {
                     onClick={() => navigate(`/demo/jobs/${job.id}`)}
                     className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
                   >
-                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300 normal-case tracking-normal">{formatDate(job.scheduledAt)}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}>
+                    <td className="px-4 py-4 text-gray-700 dark:text-gray-300 normal-case tracking-normal sm:px-6">{formatDate(job.scheduledAt)}</td>
+                    <td className="px-4 py-4 sm:px-6">
+                      <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium uppercase tracking-normal ${STATUS_BADGE[job.status]}`}>
                         {job.status.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{job.crewIds.length} assigned</td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="hidden sm:table-cell px-4 py-4 text-gray-500 dark:text-gray-400 sm:px-6">{job.crewIds.length} assigned</td>
+                    <td className="px-4 py-4 text-right sm:px-6">
                       <span className="font-medium text-gray-900 dark:text-gray-100">View</span>
                     </td>
                   </tr>

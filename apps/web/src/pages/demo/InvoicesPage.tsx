@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { INVOICES, getClient, formatCents, type InvoiceStatus } from './_data'
 import { useTheme } from '../../hooks/useTheme'
 
@@ -28,8 +29,8 @@ export default function DemoInvoicesPage() {
     .reduce((sum, i) => sum + i.amountCents, 0)
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Invoices</h1>
         <div className="flex items-center gap-3">
           <button
@@ -39,6 +40,7 @@ export default function DemoInvoicesPage() {
           >
             New invoice
           </button>
+          <SidebarToggle />
           <button
             onClick={toggle}
             aria-label="Toggle dark mode"
@@ -72,16 +74,16 @@ export default function DemoInvoicesPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <table className="w-full text-sm">
           <thead className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
             <tr>
-              <th className="px-6 py-3">Client</th>
-              <th className="px-6 py-3">Amount</th>
-              <th className="px-6 py-3">Due</th>
-              <th className="px-6 py-3">Line items</th>
-              <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3" />
+              <th className="px-4 py-3 sm:px-6">Client</th>
+              <th className="px-4 py-3 sm:px-6">Amount</th>
+              <th className="hidden md:table-cell px-4 py-3 sm:px-6">Due</th>
+              <th className="hidden sm:table-cell px-4 py-3 sm:px-6">Line items</th>
+              <th className="px-4 py-3 sm:px-6">Status</th>
+              <th className="px-4 py-3 sm:px-6" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -89,10 +91,10 @@ export default function DemoInvoicesPage() {
               const client = getClient(invoice.clientId)
               return (
                 <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100 normal-case tracking-normal">{client?.name ?? '—'}</td>
-                  <td className="px-6 py-4 text-gray-700 dark:text-gray-300 normal-case tracking-normal">{formatCents(invoice.amountCents)}</td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal">{invoice.dueDate}</td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
+                  <td className="px-4 py-4 font-medium text-gray-900 dark:text-gray-100 normal-case tracking-normal sm:px-6">{client?.name ?? '—'}</td>
+                  <td className="px-4 py-4 text-gray-700 dark:text-gray-300 normal-case tracking-normal sm:px-6">{formatCents(invoice.amountCents)}</td>
+                  <td className="hidden md:table-cell px-4 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal sm:px-6">{invoice.dueDate}</td>
+                  <td className="hidden sm:table-cell px-4 py-4 text-gray-500 dark:text-gray-400 sm:px-6">
                     <ul className="space-y-0.5">
                       {invoice.lineItems.map((li, i) => (
                         <li key={i} className="text-xs normal-case tracking-normal">
@@ -104,12 +106,12 @@ export default function DemoInvoicesPage() {
                       ))}
                     </ul>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium uppercase ${STATUS_BADGE[invoice.status]}`}>
+                  <td className="px-4 py-4 sm:px-6">
+                    <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium uppercase ${STATUS_BADGE[invoice.status]}`}>
                       {invoice.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-4 py-4 text-right sm:px-6">
                     {invoice.status === 'draft' && (
                       <button
                         onClick={() => sendInvoice(invoice.id)}
