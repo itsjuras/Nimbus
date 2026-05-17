@@ -7,6 +7,7 @@ import {
 } from '../db/queries/jobChecklist.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { sendCompletionReport } from './reportService.js'
+import { notifyOwnersJobStatusChanged } from '../lib/push.js'
 import type { Job, JobChecklistItem, JobPhoto } from '@nimbus/shared'
 
 export async function markItemComplete(
@@ -78,10 +79,12 @@ export async function completeJob(
     completed_by: profileId,
   })
 
-  // Send client report asynchronously — don't block the response on email delivery
+  // Send client report and owner notification asynchronously
   sendCompletionReport(jobId, companyId).catch((err) => {
     console.error(`[report] Unhandled error sending report for job ${jobId}:`, err)
   })
+
+  notifyOwnersJobStatusChanged(companyId, jobId, '', 'completed').catch(() => {})
 
   return updated
 }

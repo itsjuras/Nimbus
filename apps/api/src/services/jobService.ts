@@ -12,6 +12,7 @@ import {
 import { getClientById } from '../db/queries/clients.js'
 import { getChecklistByClientId } from '../db/queries/checklists.js'
 import { AppError } from '../middleware/errorHandler.js'
+import { notifyCrewJobAssigned, notifyOwnersJobStatusChanged } from '../lib/push.js'
 import type { Job, JobDetail, CreateJobRequest, UpdateJobRequest, JobFilters } from '@nimbus/shared'
 
 export async function listJobs(companyId: string, filters: JobFilters): Promise<Job[]> {
@@ -50,6 +51,11 @@ export async function createJob(
     setJobCrew(job.id, input.crewIds),
     seedJobChecklistItems(job.id, input.checklistId),
   ])
+
+  // Notify assigned crew (fire-and-forget)
+  input.crewIds.forEach((profileId) => {
+    notifyCrewJobAssigned(job.id, profileId).catch(() => {})
+  })
 
   return job
 }
@@ -100,5 +106,12 @@ export async function startJob(id: string, companyId: string): Promise<Job> {
 
   const job = await updateJobStatus(id, companyId, 'in_progress')
   if (!job) throw new AppError('JOB_NOT_FOUND', 'No job found with that ID', 404)
+
+  // Notify owners (fire-and-forget)
+  const detail = await getJobDetail(id, companyId).catch(() => null)
+  if (detail) {
+    notifyOwnersJobStatusChanged(companyId, id, detail.clientName, 'in_progress').catch(() => {})
+  }
+
   return job
 }

@@ -3,7 +3,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { supabase } from '../lib/supabase'
-import { api } from '../lib/api'
 import type { Profile } from '@nimbus/shared'
 import { useTheme } from '../hooks/useTheme'
 import { ShaderBackground } from '../components/ui/shader-background'
@@ -34,8 +33,9 @@ export default function LoginPage() {
       })
       if (error) throw error
 
-      const profile = await api.get<Profile>('/api/v1/auth/me')
-      if (profile.role === 'crew') {
+      const { data: profileData } = await supabase.from('profiles').select('*').single()
+      const profile = profileData as Profile | null
+      if (profile?.role === 'crew') {
         navigate('/crew/jobs', { replace: true })
       } else {
         navigate('/owner/dashboard', { replace: true })

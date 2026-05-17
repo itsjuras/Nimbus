@@ -43,11 +43,16 @@ export function useAuth() {
     return () => listener.subscription.unsubscribe()
   }, [])
 
+  async function signIn(email: string, password: string) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw new Error(error.message)
+  }
+
   async function signOut() {
     await supabase.auth.signOut()
   }
 
-  return { ...state, signOut }
+  return { ...state, signIn, signOut }
 }
 
 async function fetchProfile(): Promise<Profile | null> {

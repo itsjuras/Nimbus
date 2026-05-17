@@ -12,5 +12,26 @@
   "devDependencies": {
     "concurrently": "^9.0.0",
     "typescript": "^5.5.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "metro": "0.81.5",
+      "metro-babel-transformer": "0.81.5",
+      "metro-cache": "0.81.5",
+      "metro-cache-key": "0.81.5",
+      "metro-config": "0.81.5",
+      "metro-core": "0.81.5",
+      "metro-file-map": "0.81.5",
+      "metro-minify-terser": "0.81.5",
+      "metro-resolver": "0.81.5",
+      "metro-runtime": "0.81.5",
+      "metro-source-map": "0.81.5",
+      "metro-symbolicate": "0.81.5",
+      "metro-transform-plugins": "0.81.5",
+      "metro-transform-worker": "0.81.5",
+      "react-native-reanimated": "~3.16.2",
+      "react-native-worklets": "0.4.1",
+      "@babel/core": "~7.25.0"
+    }
   }
 }

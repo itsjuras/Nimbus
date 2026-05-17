@@ -5,6 +5,7 @@ import { clientsRouter } from './routes/clients.js'
 import { checklistsRouter } from './routes/checklists.js'
 import { jobsRouter } from './routes/jobs.js'
 import { invoicesRouter } from './routes/invoices.js'
+import { mobileRouter } from './routes/mobile.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
@@ -33,6 +34,7 @@ app.use('/api/v1/clients', clientsRouter)
 app.use('/api/v1/checklists', checklistsRouter)
 app.use('/api/v1/jobs', jobsRouter)
 app.use('/api/v1', invoicesRouter)
+app.use('/api/v1', mobileRouter)
 
 app.use(errorHandler)
 
