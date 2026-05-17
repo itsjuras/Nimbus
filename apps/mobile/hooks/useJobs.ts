@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
-import type { Job, JobDetail, UpdateJobRequest, JobFilters } from '@nimbus/shared'
+import type { Job, JobDetail, UpdateJobRequest, JobFilters, CreateJobRequest, Checklist } from '@nimbus/shared'
 
 export const JOBS_KEY = ['jobs'] as const
 
@@ -41,5 +41,21 @@ export function useStartJob() {
   return useMutation({
     mutationFn: (id: string) => api.post<Job>(`/api/v1/jobs/${id}/start`, {}),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: JOBS_KEY }),
+  })
+}
+
+export function useCreateJob() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: CreateJobRequest) => api.post<Job>('/api/v1/jobs', data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: JOBS_KEY }),
+  })
+}
+
+export function useClientChecklist(clientId: string | null) {
+  return useQuery({
+    queryKey: ['checklists', clientId],
+    queryFn: () => api.get<Checklist>(`/api/v1/checklists/${clientId}`),
+    enabled: !!clientId,
   })
 }
