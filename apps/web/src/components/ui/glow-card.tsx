@@ -36,7 +36,6 @@ const GLOW_STYLES = `
     inset: calc(var(--border-size) * -1);
     border: var(--border-size) solid transparent;
     border-radius: calc(var(--radius) * 1px);
-    background-attachment: fixed;
     background-size: calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)));
     background-repeat: no-repeat;
     background-position: 50% 50%;
@@ -86,36 +85,65 @@ function ensureStyles() {
   document.head.appendChild(el)
 }
 
-// ── Shared pointer registry — one listener for all cards ─────────────────────
+// ── Shared pointer registry — one listener, rAF-throttled, viewport-aware ────
 
-const registeredCards = new Set<HTMLDivElement>()
+const allCards = new Set<HTMLDivElement>()
+const visibleCards = new Set<HTMLDivElement>()
 let pointerListenerActive = false
+let lastClientX = 0
+let lastClientY = 0
+let rafPending = false
+let observer: IntersectionObserver | null = null
+
+function getObserver(): IntersectionObserver {
+  if (observer) return observer
+  observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        const el = entry.target as HTMLDivElement
+        if (entry.isIntersecting) visibleCards.add(el)
+        else visibleCards.delete(el)
+      }
+    },
+    { rootMargin: '100px' },
+  )
+  return observer
+}
 
 function registerCard(el: HTMLDivElement) {
-  registeredCards.add(el)
+  allCards.add(el)
+  getObserver().observe(el)
   if (pointerListenerActive) return
   pointerListenerActive = true
   document.addEventListener('pointermove', onPointerMove, { passive: true })
 }
 
 function unregisterCard(el: HTMLDivElement) {
-  registeredCards.delete(el)
-  if (registeredCards.size === 0 && pointerListenerActive) {
+  allCards.delete(el)
+  visibleCards.delete(el)
+  observer?.unobserve(el)
+  if (allCards.size === 0 && pointerListenerActive) {
     pointerListenerActive = false
     document.removeEventListener('pointermove', onPointerMove)
   }
 }
 
 function onPointerMove(e: PointerEvent) {
-  const x = e.clientX.toFixed(2)
-  const xp = (e.clientX / window.innerWidth).toFixed(2)
-  const y = e.clientY.toFixed(2)
-  const yp = (e.clientY / window.innerHeight).toFixed(2)
-  for (const card of registeredCards) {
+  lastClientX = e.clientX
+  lastClientY = e.clientY
+  if (rafPending) return
+  rafPending = true
+  requestAnimationFrame(flushCards)
+}
+
+function flushCards() {
+  rafPending = false
+  for (const card of visibleCards) {
+    const rect = card.getBoundingClientRect()
+    const x = (lastClientX - rect.left).toFixed(0)
+    const y = (lastClientY - rect.top).toFixed(0)
     card.style.setProperty('--x', x)
-    card.style.setProperty('--xp', xp)
     card.style.setProperty('--y', y)
-    card.style.setProperty('--yp', yp)
   }
 }
 
@@ -163,7 +191,6 @@ export function GlowCard({
       backgroundColor: 'var(--backdrop, transparent)',
       backgroundSize: 'calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)))',
       backgroundPosition: '50% 50%',
-      backgroundAttachment: 'fixed',
       border: 'var(--border-size) solid var(--backup-border)',
       position: 'relative',
       touchAction: 'none',
@@ -180,7 +207,7 @@ export function GlowCard({
       style={inlineStyles}
       className={`
         ${!customSize ? sizeMap[size] : ''}
-        rounded-2xl relative shadow-[0_1rem_2rem_-1rem_black] p-4 gap-4 backdrop-blur-[5px]
+        rounded-2xl relative shadow-[0_1rem_2rem_-1rem_black] p-4 gap-4
         ${className}
       `}
     >
