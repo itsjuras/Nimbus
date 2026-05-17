@@ -1,5 +1,6 @@
-import { Text, View, useColorScheme } from 'react-native'
+import { Text, View } from 'react-native'
 import type { JobStatus } from '@nimbus/shared'
+import { useTheme } from '../../contexts/ThemeContext'
 
 const LABELS: Record<JobStatus, string> = {
   scheduled: 'SCHEDULED',
@@ -13,8 +14,7 @@ interface StatusChipProps {
 }
 
 export function StatusChip({ status }: StatusChipProps) {
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const styles = chipStyles(status, dark)
 

@@ -1,5 +1,6 @@
-import { View, useColorScheme } from 'react-native'
+import { View } from 'react-native'
 import type { ReactNode } from 'react'
+import { useTheme } from '../../contexts/ThemeContext'
 
 interface CardProps {
   children: ReactNode
@@ -7,8 +8,7 @@ interface CardProps {
 }
 
 export function Card({ children }: CardProps) {
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   return (
     <View

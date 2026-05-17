@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { View, Text, ScrollView, Pressable, useColorScheme } from 'react-native'
+import { View, Text, ScrollView, Pressable } from 'react-native'
+import { useTheme } from '../../../contexts/ThemeContext'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import * as ImagePicker from 'expo-image-picker'
@@ -12,8 +13,7 @@ import type { JobChecklistItemDetail } from '@nimbus/shared'
 export default function CrewJobDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const { data: job, isLoading } = useJob(id ?? '')
   const startJob = useStartJob()

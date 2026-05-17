@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, Pressable, useColorScheme } from 'react-native'
+import { View, Text, ScrollView, Pressable } from 'react-native'
+import { useTheme } from '../../../contexts/ThemeContext'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useClient } from '../../../hooks/useClients'
@@ -9,8 +10,7 @@ import { LoadingSpinner } from '../../../components/ui/LoadingSpinner'
 export default function ClientDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const { data: client, isLoading } = useClient(id ?? '')
   const { data: jobs } = useJobs()

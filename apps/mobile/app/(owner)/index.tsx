@@ -1,10 +1,12 @@
-import { ScrollView, Text, View, Pressable, useColorScheme } from 'react-native'
+import { ScrollView, Text, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLiveJobs } from '../../hooks/useLiveJobs'
 import { useClients } from '../../hooks/useClients'
 import { JobCard } from '../../components/jobs/JobCard'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
+import { ThemeToggle } from '../../components/ui/ThemeToggle'
+import { useTheme } from '../../contexts/ThemeContext'
 import type { JobStatus } from '@nimbus/shared'
 
 const COLUMNS: { status: JobStatus; label: string }[] = [
@@ -18,8 +20,7 @@ export default function DashboardScreen() {
   const { data: jobs, isLoading } = useLiveJobs()
   const { data: clients } = useClients()
   const router = useRouter()
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const clientMap = new Map(clients?.map((c) => [c.id, c.name]) ?? [])
 
@@ -46,18 +47,20 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-        <Text
-          style={{
-            fontSize: 22,
-            fontWeight: '700',
-            color: textColor,
-            letterSpacing: 1,
-            fontFamily: 'IBMPlexMono_700Bold',
-            marginBottom: 20,
-          }}
-        >
-          DASHBOARD
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: '700',
+              color: textColor,
+              letterSpacing: 1,
+              fontFamily: 'IBMPlexMono_700Bold',
+            }}
+          >
+            DASHBOARD
+          </Text>
+          <ThemeToggle />
+        </View>
 
         {/* Stat cards */}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 24 }}>

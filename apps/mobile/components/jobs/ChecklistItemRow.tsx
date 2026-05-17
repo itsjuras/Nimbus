@@ -1,4 +1,5 @@
-import { Pressable, Text, View, useColorScheme } from 'react-native'
+import { Pressable, Text, View } from 'react-native'
+import { useTheme } from '../../contexts/ThemeContext'
 import type { JobChecklistItemDetail } from '@nimbus/shared'
 
 interface ChecklistItemRowProps {
@@ -18,8 +19,7 @@ export function ChecklistItemRow({
   onToggle,
   onCameraPress,
 }: ChecklistItemRowProps) {
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   return (
     <View

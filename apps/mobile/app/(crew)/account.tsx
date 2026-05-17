@@ -7,12 +7,13 @@ import {
   TextInput,
   Switch,
   Alert,
-  useColorScheme,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../hooks/useAuth'
 import { api } from '../../lib/api'
+import { ThemeToggle } from '../../components/ui/ThemeToggle'
+import { useTheme } from '../../contexts/ThemeContext'
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -32,8 +33,7 @@ interface AvailabilityDay {
 export default function AccountScreen() {
   const { profile, signOut } = useAuth()
   const queryClient = useQueryClient()
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -93,9 +93,12 @@ export default function AccountScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
-        <Text style={{ fontSize: 22, fontWeight: '700', color: textColor, letterSpacing: 1, fontFamily: 'IBMPlexMono_700Bold', marginBottom: 4 }}>
-          ACCOUNT
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <Text style={{ fontSize: 22, fontWeight: '700', color: textColor, letterSpacing: 1, fontFamily: 'IBMPlexMono_700Bold' }}>
+            ACCOUNT
+          </Text>
+          <ThemeToggle />
+        </View>
         {profile != null && (
           <Text style={{ fontSize: 14, color: mutedColor, marginBottom: 24 }}>{profile.fullName}</Text>
         )}

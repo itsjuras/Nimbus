@@ -1,12 +1,12 @@
-import { Text, View, useColorScheme } from 'react-native'
+import { Text, View } from 'react-native'
+import { useTheme } from '../../contexts/ThemeContext'
 
 interface EmptyStateProps {
   message: string
 }
 
 export function EmptyState({ message }: EmptyStateProps) {
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 64 }}>

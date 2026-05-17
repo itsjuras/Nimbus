@@ -1,4 +1,5 @@
-import { ScrollView, View, Text, Pressable, useColorScheme } from 'react-native'
+import { ScrollView, View, Text, Pressable } from 'react-native'
+import { useTheme } from '../../../contexts/ThemeContext'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useJob, useUpdateJob } from '../../../hooks/useJobs'
@@ -14,8 +15,7 @@ const STATUS_TRANSITIONS: { from: JobStatus; to: JobStatus; label: string }[] = 
 export default function OwnerJobDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const { data: job, isLoading } = useJob(id ?? '')
   const updateJob = useUpdateJob(id ?? '')

@@ -1,8 +1,10 @@
-import { View, Text, ScrollView, useColorScheme } from 'react-native'
+import { View, Text, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useInvoices } from '../../hooks/useInvoices'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { ThemeToggle } from '../../components/ui/ThemeToggle'
+import { useTheme } from '../../contexts/ThemeContext'
 import type { InvoiceStatus } from '@nimbus/shared'
 
 const STATUS_LABELS: Record<InvoiceStatus, string> = {
@@ -23,8 +25,7 @@ function invoiceChipStyle(status: InvoiceStatus, dark: boolean) {
 
 export default function InvoicesScreen() {
   const { data: invoices, isLoading } = useInvoices()
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const bg = dark ? '#030712' : '#f9fafb'
   const cardBg = dark ? '#111827' : '#ffffff'
@@ -34,10 +35,11 @@ export default function InvoicesScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
-      <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12 }}>
+      <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Text style={{ fontSize: 22, fontWeight: '700', color: textColor, letterSpacing: 1, fontFamily: 'IBMPlexMono_700Bold' }}>
           INVOICES
         </Text>
+        <ThemeToggle />
       </View>
 
       {isLoading ? (

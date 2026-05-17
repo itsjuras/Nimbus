@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, Pressable, useColorScheme } from 'react-native'
+import { View, Text, ScrollView, Pressable } from 'react-native'
+import { useTheme } from '../../../contexts/ThemeContext'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useCrewMember } from '../../../hooks/useCrew'
@@ -10,8 +11,7 @@ import { LoadingSpinner } from '../../../components/ui/LoadingSpinner'
 export default function CrewDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const { data: member, isLoading } = useCrewMember(id ?? '')
   const { data: jobs } = useJobs()

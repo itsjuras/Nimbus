@@ -1,8 +1,8 @@
-import { ActivityIndicator, View, useColorScheme } from 'react-native'
+import { ActivityIndicator, View } from 'react-native'
+import { useTheme } from '../../contexts/ThemeContext'
 
 export function LoadingSpinner() {
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 64 }}>

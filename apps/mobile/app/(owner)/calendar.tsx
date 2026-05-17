@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { View, Text, Pressable, ScrollView, useColorScheme } from 'react-native'
+import { View, Text, Pressable, ScrollView } from 'react-native'
+import { useTheme } from '../../contexts/ThemeContext'
+import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useJobs } from '../../hooks/useJobs'
@@ -17,8 +19,7 @@ export default function CalendarScreen() {
   const [current, setCurrent] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const router = useRouter()
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const year = current.getFullYear()
   const month = current.getMonth()
@@ -67,18 +68,20 @@ export default function CalendarScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-        <Text
-          style={{
-            fontSize: 22,
-            fontWeight: '700',
-            color: textColor,
-            letterSpacing: 1,
-            fontFamily: 'IBMPlexMono_700Bold',
-            marginBottom: 20,
-          }}
-        >
-          CALENDAR
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: '700',
+              color: textColor,
+              letterSpacing: 1,
+              fontFamily: 'IBMPlexMono_700Bold',
+            }}
+          >
+            CALENDAR
+          </Text>
+          <ThemeToggle />
+        </View>
 
         {/* Month navigation */}
         <View

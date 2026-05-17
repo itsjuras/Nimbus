@@ -1,6 +1,6 @@
 import '../global.css'
 import { useEffect } from 'react'
-import { View, ActivityIndicator, useColorScheme } from 'react-native'
+import { View, ActivityIndicator } from 'react-native'
 import { Slot, useRouter, useSegments } from 'expo-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
@@ -13,6 +13,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import * as Notifications from 'expo-notifications'
 import { useAuth } from '../hooks/useAuth'
 import { registerForPushNotifications } from '../lib/notifications'
+import { ThemeProvider, useTheme } from '../contexts/ThemeContext'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -33,7 +34,9 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthGate />
+      <ThemeProvider>
+        <AuthGate />
+      </ThemeProvider>
     </QueryClientProvider>
   )
 }
@@ -42,7 +45,7 @@ function AuthGate() {
   const { session, profile, loading } = useAuth()
   const segments = useSegments()
   const router = useRouter()
-  const scheme = useColorScheme()
+  const { dark } = useTheme()
 
   useEffect(() => {
     if (loading) return
@@ -94,10 +97,10 @@ function AuthGate() {
           flex: 1,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: scheme === 'dark' ? '#111827' : '#ffffff',
+          backgroundColor: dark ? '#111827' : '#ffffff',
         }}
       >
-        <ActivityIndicator size="large" color={scheme === 'dark' ? '#f9fafb' : '#111827'} />
+        <ActivityIndicator size="large" color={dark ? '#f9fafb' : '#111827'} />
       </View>
     )
   }

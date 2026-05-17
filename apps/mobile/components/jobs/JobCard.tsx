@@ -1,5 +1,6 @@
-import { Pressable, Text, View, useColorScheme } from 'react-native'
+import { Pressable, Text, View } from 'react-native'
 import { StatusChip } from '../ui/StatusChip'
+import { useTheme } from '../../contexts/ThemeContext'
 import type { Job } from '@nimbus/shared'
 
 interface JobCardProps {
@@ -9,8 +10,7 @@ interface JobCardProps {
 }
 
 export function JobCard({ job, clientName, onPress }: JobCardProps) {
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
   const scheduled = new Date(job.scheduledAt)
   const isToday = scheduled.toDateString() === new Date().toDateString()
 

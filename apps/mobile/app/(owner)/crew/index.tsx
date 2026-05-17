@@ -1,15 +1,16 @@
-import { View, Text, ScrollView, Pressable, useColorScheme } from 'react-native'
+import { View, Text, ScrollView, Pressable } from 'react-native'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useCrewMembers } from '../../../hooks/useCrew'
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner'
 import { EmptyState } from '../../../components/ui/EmptyState'
+import { ThemeToggle } from '../../../components/ui/ThemeToggle'
+import { useTheme } from '../../../contexts/ThemeContext'
 
 export default function CrewScreen() {
   const { data: crew, isLoading } = useCrewMembers()
   const router = useRouter()
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const bg = dark ? '#030712' : '#f9fafb'
   const cardBg = dark ? '#111827' : '#ffffff'
@@ -19,10 +20,11 @@ export default function CrewScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
-      <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12 }}>
+      <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Text style={{ fontSize: 22, fontWeight: '700', color: textColor, letterSpacing: 1, fontFamily: 'IBMPlexMono_700Bold' }}>
           CREW
         </Text>
+        <ThemeToggle />
       </View>
 
       {isLoading ? (

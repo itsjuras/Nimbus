@@ -7,15 +7,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  useColorScheme,
   ActivityIndicator,
 } from 'react-native'
 import { useAuth } from '../../hooks/useAuth'
+import { useTheme } from '../../contexts/ThemeContext'
 
 export default function LoginScreen() {
   const { signIn } = useAuth()
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)

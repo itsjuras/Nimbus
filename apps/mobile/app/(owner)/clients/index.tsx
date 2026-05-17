@@ -1,17 +1,18 @@
-import { View, Text, ScrollView, Pressable, TextInput, useColorScheme } from 'react-native'
+import { View, Text, ScrollView, Pressable, TextInput } from 'react-native'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useState } from 'react'
 import { useClients } from '../../../hooks/useClients'
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner'
 import { EmptyState } from '../../../components/ui/EmptyState'
+import { ThemeToggle } from '../../../components/ui/ThemeToggle'
+import { useTheme } from '../../../contexts/ThemeContext'
 
 export default function ClientsScreen() {
   const { data: clients, isLoading } = useClients()
   const router = useRouter()
   const [search, setSearch] = useState('')
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const bg = dark ? '#030712' : '#f9fafb'
   const cardBg = dark ? '#111827' : '#ffffff'
@@ -30,9 +31,12 @@ export default function ClientsScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
       <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12 }}>
-        <Text style={{ fontSize: 22, fontWeight: '700', color: textColor, letterSpacing: 1, fontFamily: 'IBMPlexMono_700Bold', marginBottom: 16 }}>
-          CLIENTS
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <Text style={{ fontSize: 22, fontWeight: '700', color: textColor, letterSpacing: 1, fontFamily: 'IBMPlexMono_700Bold' }}>
+            CLIENTS
+          </Text>
+          <ThemeToggle />
+        </View>
         <TextInput
           value={search}
           onChangeText={setSearch}

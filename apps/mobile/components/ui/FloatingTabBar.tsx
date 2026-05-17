@@ -1,11 +1,12 @@
 import { useRef } from 'react'
-import { View, Pressable, Animated, useColorScheme } from 'react-native'
+import { View, Pressable, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
+import { useTheme } from '../../contexts/ThemeContext'
 
 export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const { bottom } = useSafeAreaInsets()
-  const dark = useColorScheme() === 'dark'
+  const { dark } = useTheme()
 
   const visibleRoutes = state.routes
     .map((route, index) => ({ route, index }))

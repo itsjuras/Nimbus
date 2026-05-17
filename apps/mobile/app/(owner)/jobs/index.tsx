@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, ScrollView, Pressable, useColorScheme } from 'react-native'
+import { View, Text, ScrollView, Pressable } from 'react-native'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useJobs } from '../../../hooks/useJobs'
@@ -7,6 +7,8 @@ import { useClients } from '../../../hooks/useClients'
 import { JobCard } from '../../../components/jobs/JobCard'
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner'
 import { EmptyState } from '../../../components/ui/EmptyState'
+import { ThemeToggle } from '../../../components/ui/ThemeToggle'
+import { useTheme } from '../../../contexts/ThemeContext'
 import type { JobStatus } from '@nimbus/shared'
 
 const STATUSES: { value: JobStatus | 'all'; label: string }[] = [
@@ -20,8 +22,7 @@ const STATUSES: { value: JobStatus | 'all'; label: string }[] = [
 export default function JobsScreen() {
   const [filter, setFilter] = useState<JobStatus | 'all'>('all')
   const router = useRouter()
-  const scheme = useColorScheme()
-  const dark = scheme === 'dark'
+  const { dark } = useTheme()
 
   const { data: jobs, isLoading } = useJobs(filter !== 'all' ? { status: filter } : {})
   const { data: clients } = useClients()
@@ -36,18 +37,20 @@ export default function JobsScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
       <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12 }}>
-        <Text
-          style={{
-            fontSize: 22,
-            fontWeight: '700',
-            color: textColor,
-            letterSpacing: 1,
-            fontFamily: 'IBMPlexMono_700Bold',
-            marginBottom: 16,
-          }}
-        >
-          JOBS
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: '700',
+              color: textColor,
+              letterSpacing: 1,
+              fontFamily: 'IBMPlexMono_700Bold',
+            }}
+          >
+            JOBS
+          </Text>
+          <ThemeToggle />
+        </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {STATUSES.map(({ value, label }) => (
