@@ -8,6 +8,7 @@ import NimbusSymbolLogo from '../assets/NimbusSymbolLogo.png'
 
 export default function LandingPage() {
   const { theme, toggle } = useTheme()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const productRef = useRef<HTMLElement>(null)
   const dashboardRef = useRef<HTMLElement>(null)
   const aboutRef = useRef<HTMLElement>(null)
@@ -15,6 +16,7 @@ export default function LandingPage() {
 
   const scrollTo = useCallback((ref: React.RefObject<HTMLElement | null>) => {
     ref.current?.scrollIntoView({ behavior: 'smooth' })
+    setMobileMenuOpen(false)
   }, [])
 
   const mockupContainerRef = useRef<HTMLDivElement>(null)
@@ -49,6 +51,7 @@ export default function LandingPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center px-4 sm:px-6 md:px-10">
           <img src={NimbusTextLogo} alt="Nimbus" className="h-5 w-auto shrink-0" />
 
+          {/* Desktop nav */}
           <nav className="hidden items-center justify-center gap-8 lg:flex lg:flex-1">
             {[
               { label: 'Product', ref: productRef },
@@ -66,17 +69,17 @@ export default function LandingPage() {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-3 sm:gap-5">
+          {/* Desktop right side */}
+          <div className="ml-auto hidden items-center gap-5 lg:flex">
             <Link to="/login" className="text-sm uppercase tracking-widest text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
               Sign in
             </Link>
             <Link
               to="/signup"
-              className="rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 sm:px-4"
+              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
             >
               Get started
             </Link>
-
             <button
               onClick={toggle}
               aria-label="Toggle dark mode"
@@ -93,7 +96,73 @@ export default function LandingPage() {
               </span>
             </button>
           </div>
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileMenuOpen((o) => !o)}
+            aria-label="Toggle menu"
+            className="ml-auto flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
+          >
+            {mobileMenuOpen ? <XIcon /> : <HamburgerIcon />}
+          </button>
         </div>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="border-t border-gray-100 bg-white/95 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/95 lg:hidden">
+            <div className="mx-auto max-w-7xl space-y-1 px-4 pb-4 pt-2">
+              {[
+                { label: 'Product', ref: productRef },
+                { label: 'Dashboard', ref: dashboardRef },
+                { label: 'About', ref: aboutRef },
+                { label: 'Support', ref: supportRef },
+              ].map(({ label, ref }) => (
+                <button
+                  key={label}
+                  onClick={() => scrollTo(ref)}
+                  className="block w-full rounded-lg px-3 py-2.5 text-left text-sm uppercase tracking-widest text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                >
+                  {label}
+                </button>
+              ))}
+              <div className="my-2 border-t border-gray-100 dark:border-gray-800" />
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block rounded-lg px-3 py-2.5 text-sm uppercase tracking-widest text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/signup"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block rounded-lg bg-gray-900 px-3 py-2.5 text-center text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+              >
+                Get started
+              </Link>
+              <div className="flex items-center justify-between rounded-lg px-3 py-2.5">
+                <span className="text-sm uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                  {theme === 'dark' ? 'Dark mode' : 'Light mode'}
+                </span>
+                <button
+                  onClick={toggle}
+                  aria-label="Toggle dark mode"
+                  className={`relative flex h-8 w-16 shrink-0 items-center rounded-full transition-colors duration-300 ${
+                    theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+                  }`}
+                >
+                  <span
+                    className={`absolute flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-500 shadow transition-transform duration-300 ${
+                      theme === 'dark' ? 'translate-x-9' : 'translate-x-1'
+                    }`}
+                  >
+                    {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ── Hero — transparent so shader shows through ─────────────────────── */}
@@ -439,6 +508,25 @@ function CreditCardIcon() {
 
 
 // ── Theme icons ───────────────────────────────────────────────────────────────
+
+function HamburgerIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  )
+}
+
+function XIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
 
 function SunIcon() {
   return (
