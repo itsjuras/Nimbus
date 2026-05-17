@@ -94,8 +94,9 @@ function ShaderCanvas({ fragSource }: { fragSource: string }) {
 
   useEffect(() => {
     const canvas = canvasRef.current!
-    const gl = canvas.getContext("webgl2", { premultipliedAlpha: false })
-    if (!gl) return
+    const glRaw = canvas.getContext("webgl2", { premultipliedAlpha: false })
+    if (!glRaw) return
+    const gl = glRaw
 
     let disposed = false
 

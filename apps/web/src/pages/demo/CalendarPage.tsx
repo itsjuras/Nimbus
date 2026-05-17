@@ -28,12 +28,15 @@ export default function DemoCalendarPage() {
   const touchStartX = useRef<number | null>(null)
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX
+    const touch = e.touches[0]
+    if (touch) touchStartX.current = touch.clientX
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null) return
-    const delta = e.changedTouches[0].clientX - touchStartX.current
+    const touch = e.changedTouches[0]
+    if (!touch) return
+    const delta = touch.clientX - touchStartX.current
     if (Math.abs(delta) > 50) {
       setCurrent(new Date(year, delta < 0 ? month + 1 : month - 1, 1))
     }
