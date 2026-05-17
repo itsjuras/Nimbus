@@ -1,12 +1,12 @@
-import { useState } from 'react'
-import { View, Text, Pressable, ScrollView } from 'react-native'
+import { useState, useRef } from 'react'
+import { View, Text, Pressable, Modal, ScrollView } from 'react-native'
 import { useTheme } from '../../contexts/ThemeContext'
 import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useJobs } from '../../hooks/useJobs'
 import { useClients } from '../../hooks/useClients'
-import { StatusChip } from '../../components/ui/StatusChip'
 import type { Job } from '@nimbus/shared'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -20,6 +20,8 @@ export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const router = useRouter()
   const { dark } = useTheme()
+  const { bottom } = useSafeAreaInsets()
+  const touchStartX = useRef<number | null>(null)
 
   const year = current.getFullYear()
   const month = current.getMonth()
@@ -56,19 +58,35 @@ export default function CalendarScreen() {
 
   function prevMonth() {
     setCurrent(new Date(year, month - 1, 1))
-    setSelectedDate(null)
   }
   function nextMonth() {
     setCurrent(new Date(year, month + 1, 1))
-    setSelectedDate(null)
   }
 
   const today = new Date()
 
+  // Build weeks: fill leading/trailing slots with prev/next month days
+  const daysInPrevMonth = new Date(year, month, 0).getDate()
+  type Cell = { day: number; current: boolean }
+  const cells: Cell[] = [
+    ...Array.from({ length: firstDay }, (_, i) => ({
+      day: daysInPrevMonth - firstDay + 1 + i,
+      current: false,
+    })),
+    ...Array.from({ length: daysInMonth }, (_, i) => ({ day: i + 1, current: true })),
+  ]
+  let trailing = 1
+  while (cells.length % 7 !== 0) {
+    cells.push({ day: trailing++, current: false })
+  }
+  const weeks: Cell[][] = []
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7))
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={['top', 'left', 'right']}>
+      <View style={{ flex: 1, padding: 16, paddingBottom: 50 + bottom + 4 + 28 }}>
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <Text
             style={{
               fontSize: 22,
@@ -83,142 +101,261 @@ export default function CalendarScreen() {
           <ThemeToggle />
         </View>
 
-        {/* Month navigation */}
+        {/* Calendar card fills the rest of the page */}
         <View
           style={{
+            flex: 1,
             backgroundColor: cardBg,
-            borderRadius: 12,
+            borderRadius: 16,
             borderWidth: 1,
             borderColor,
-            padding: 16,
-            marginBottom: 16,
+            padding: 12,
           }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <Pressable onPress={prevMonth} style={{ padding: 8 }}>
-              <Text style={{ color: textColor, fontSize: 18 }}>‹</Text>
+          {/* Month navigation */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <Pressable onPress={prevMonth} hitSlop={12} style={{ padding: 8 }}>
+              <Text style={{ color: textColor, fontSize: 20 }}>‹</Text>
             </Pressable>
             <Text style={{ fontSize: 15, fontWeight: '700', color: textColor, fontFamily: 'IBMPlexMono_700Bold' }}>
-              {MONTHS[month]} {year}
+              {MONTHS[month].toUpperCase()} {year}
             </Text>
-            <Pressable onPress={nextMonth} style={{ padding: 8 }}>
-              <Text style={{ color: textColor, fontSize: 18 }}>›</Text>
+            <Pressable onPress={nextMonth} hitSlop={12} style={{ padding: 8 }}>
+              <Text style={{ color: textColor, fontSize: 20 }}>›</Text>
             </Pressable>
           </View>
 
           {/* Weekday headers */}
-          <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          <View style={{ flexDirection: 'row', marginBottom: 6 }}>
             {WEEKDAYS.map((d) => (
               <View key={d} style={{ flex: 1, alignItems: 'center' }}>
-                <Text style={{ fontSize: 11, color: mutedColor, letterSpacing: 0.5 }}>{d}</Text>
+                <Text style={{ fontSize: 10, color: mutedColor, letterSpacing: 0.8, fontWeight: '600' }}>
+                  {d.toUpperCase()}
+                </Text>
               </View>
             ))}
           </View>
 
-          {/* Grid */}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            {Array.from({ length: firstDay }).map((_, i) => (
-              <View key={`empty-${i}`} style={{ width: `${100 / 7}%`, aspectRatio: 1 }} />
-            ))}
-            {Array.from({ length: daysInMonth }).map((_, i) => {
-              const day = i + 1
-              const date = new Date(year, month, day)
-              const isToday = date.toDateString() === today.toDateString()
-              const isSelected = selectedDate?.toDateString() === date.toDateString()
-              const dayJobs = jobsByDay.get(day) ?? []
+          {/* Grid — weeks stretch to fill remaining vertical space */}
+          <View
+            style={{ flex: 1, gap: 4 }}
+            onTouchStart={(e) => { touchStartX.current = e.nativeEvent.pageX }}
+            onTouchEnd={(e) => {
+              if (touchStartX.current === null) return
+              const delta = e.nativeEvent.pageX - touchStartX.current
+              if (Math.abs(delta) > 50) delta < 0 ? nextMonth() : prevMonth()
+              touchStartX.current = null
+            }}
+          >
+            {weeks.map((week, wi) => (
+              <View key={wi} style={{ flex: 1, flexDirection: 'row', gap: 4 }}>
+                {week.map((cell, di) => {
+                  const { day, current } = cell
+                  const monthOffset = current ? 0 : di < 4 && wi === 0 ? -1 : 1
+                  const date = new Date(year, month + monthOffset, day)
+                  const isToday = current && date.toDateString() === today.toDateString()
+                  const dayJobs = current ? jobsByDay.get(day) ?? [] : []
+                  const outsideColor = dark ? '#374151' : '#d1d5db'
 
-              return (
-                <Pressable
-                  key={day}
-                  onPress={() => setSelectedDate(isSelected ? null : date)}
-                  style={{
-                    width: `${100 / 7}%`,
-                    aspectRatio: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 8,
-                    backgroundColor: isSelected
-                      ? dark ? '#f9fafb' : '#111827'
-                      : isToday
-                      ? dark ? '#1f2937' : '#f3f4f6'
-                      : 'transparent',
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: isToday || isSelected ? '700' : '400',
-                      color: isSelected
-                        ? dark ? '#111827' : '#ffffff'
-                        : isToday
-                        ? textColor
-                        : mutedColor,
-                    }}
-                  >
-                    {day}
-                  </Text>
-                  {dayJobs.length > 0 && (
-                    <View
+                  return (
+                    <Pressable
+                      key={`${wi}-${di}`}
+                      onPress={() => current && setSelectedDate(date)}
                       style={{
-                        width: 4,
-                        height: 4,
-                        borderRadius: 2,
-                        backgroundColor: isSelected
-                          ? dark ? '#374151' : '#9ca3af'
-                          : dark ? '#9ca3af' : '#374151',
-                        marginTop: 2,
+                        flex: 1,
+                        borderRadius: 10,
+                        padding: 4,
+                        alignItems: 'center',
+                        backgroundColor: isToday ? (dark ? '#1f2937' : '#f3f4f6') : 'transparent',
                       }}
-                    />
-                  )}
-                </Pressable>
-              )
-            })}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: isToday ? '700' : '500',
+                          color: !current ? outsideColor : textColor,
+                        }}
+                      >
+                        {day}
+                      </Text>
+                      {dayJobs.length > 0 && (
+                        <View
+                          style={{
+                            width: 4,
+                            height: 4,
+                            borderRadius: 2,
+                            backgroundColor: dark ? '#9ca3af' : '#374151',
+                            marginTop: 3,
+                          }}
+                        />
+                      )}
+                    </Pressable>
+                  )
+                })}
+              </View>
+            ))}
           </View>
         </View>
+      </View>
 
-        {/* Selected day jobs */}
-        {selectedDate != null && (
-          <View>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, letterSpacing: 1, marginBottom: 12 }}>
-              {selectedDate.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase()}
-            </Text>
-            {selectedJobs.length === 0 ? (
-              <Text style={{ color: dark ? '#374151' : '#d1d5db', textAlign: 'center', paddingVertical: 20 }}>
-                No jobs on this day
+      {/* Selected day jobs — centered modal matching the web */}
+      <Modal
+        visible={selectedDate != null}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setSelectedDate(null)}
+      >
+        <Pressable
+          onPress={() => setSelectedDate(null)}
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.35)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20,
+          }}
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: 380,
+              maxHeight: '75%',
+              backgroundColor: cardBg,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 12 },
+              shadowOpacity: 0.25,
+              shadowRadius: 24,
+              elevation: 12,
+              overflow: 'hidden',
+            }}
+          >
+            {/* Header */}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottomWidth: 1,
+                borderBottomColor: borderColor,
+                paddingHorizontal: 20,
+                paddingVertical: 14,
+              }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: '600', color: textColor }}>
+                {selectedDate?.toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric',
+                })}
               </Text>
-            ) : (
-              selectedJobs.map((job) => (
-                <Pressable
-                  key={job.id}
-                  onPress={() => router.push(`/(owner)/jobs/${job.id}`)}
-                  style={({ pressed }) => ({
-                    backgroundColor: cardBg,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor,
-                    padding: 14,
-                    marginBottom: 10,
-                    opacity: pressed ? 0.8 : 1,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  })}
+              <Pressable
+                onPress={() => setSelectedDate(null)}
+                hitSlop={8}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 18, color: mutedColor, lineHeight: 18 }}>×</Text>
+              </Pressable>
+            </View>
+
+            {/* Body */}
+            <View style={{ paddingHorizontal: 12, paddingVertical: 12 }}>
+              {selectedJobs.length === 0 ? (
+                <Text
+                  style={{
+                    color: mutedColor,
+                    textAlign: 'center',
+                    paddingVertical: 24,
+                    fontSize: 14,
+                  }}
                 >
-                  <View style={{ flex: 1, marginRight: 10 }}>
-                    <Text style={{ fontSize: 15, fontWeight: '600', color: textColor }}>
-                      {clientMap.get(job.clientId) ?? '—'}
-                    </Text>
-                    <Text style={{ fontSize: 12, color: mutedColor, marginTop: 2 }}>
-                      {new Date(job.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </Text>
-                  </View>
-                  <StatusChip status={job.status} />
-                </Pressable>
-              ))
-            )}
-          </View>
-        )}
-      </ScrollView>
+                  No jobs scheduled
+                </Text>
+              ) : (
+                <ScrollView>
+                  {selectedJobs.map((job) => {
+                    const chip = chipStyle(job.status, dark)
+                    return (
+                      <Pressable
+                        key={job.id}
+                        onPress={() => {
+                          setSelectedDate(null)
+                          router.push(`/(owner)/jobs/${job.id}`)
+                        }}
+                        style={({ pressed }) => ({
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          paddingHorizontal: 12,
+                          paddingVertical: 10,
+                          borderRadius: 12,
+                          backgroundColor: pressed ? (dark ? '#1f2937' : '#f9fafb') : 'transparent',
+                        })}
+                      >
+                        <View style={{ flex: 1, marginRight: 12, minWidth: 0 }}>
+                          <Text
+                            numberOfLines={1}
+                            style={{ fontSize: 14, fontWeight: '500', color: textColor }}
+                          >
+                            {clientMap.get(job.clientId) ?? '—'}
+                          </Text>
+                          <Text style={{ fontSize: 12, color: mutedColor, marginTop: 2 }}>
+                            {new Date(job.scheduledAt).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            backgroundColor: chip.bg,
+                            borderRadius: 4,
+                            paddingHorizontal: 8,
+                            paddingVertical: 2,
+                          }}
+                        >
+                          <Text style={{ fontSize: 11, fontWeight: '500', color: chip.text }}>
+                            {STATUS_LABEL[job.status]}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    )
+                  })}
+                </ScrollView>
+              )}
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   )
+}
+
+const STATUS_LABEL: Record<Job['status'], string> = {
+  scheduled: 'Scheduled',
+  in_progress: 'In Progress',
+  completed: 'Completed',
+  missed: 'Missed',
+}
+
+function chipStyle(status: Job['status'], dark: boolean): { bg: string; text: string } {
+  switch (status) {
+    case 'scheduled':
+      return { bg: dark ? '#1f2937' : '#f3f4f6', text: dark ? '#9ca3af' : '#4b5563' }
+    case 'in_progress':
+      return { bg: dark ? '#f3f4f6' : '#111827', text: dark ? '#111827' : '#ffffff' }
+    case 'completed':
+      return { bg: dark ? '#374151' : '#e5e7eb', text: dark ? '#d1d5db' : '#374151' }
+    case 'missed':
+      return { bg: dark ? '#1f2937' : '#f3f4f6', text: dark ? '#6b7280' : '#9ca3af' }
+  }
 }
