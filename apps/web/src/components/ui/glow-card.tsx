@@ -89,7 +89,8 @@ function ensureStyles() {
 
 const allCards = new Set<HTMLDivElement>()
 const visibleCards = new Set<HTMLDivElement>()
-let pointerListenerActive = false
+let listenersActive = false
+let hasPointerData = false
 let lastClientX = 0
 let lastClientY = 0
 let rafPending = false
@@ -113,24 +114,36 @@ function getObserver(): IntersectionObserver {
 function registerCard(el: HTMLDivElement) {
   allCards.add(el)
   getObserver().observe(el)
-  if (pointerListenerActive) return
-  pointerListenerActive = true
+  if (listenersActive) return
+  listenersActive = true
   document.addEventListener('pointermove', onPointerMove, { passive: true })
+  window.addEventListener('scroll', onScroll, { passive: true })
 }
 
 function unregisterCard(el: HTMLDivElement) {
   allCards.delete(el)
   visibleCards.delete(el)
   observer?.unobserve(el)
-  if (allCards.size === 0 && pointerListenerActive) {
-    pointerListenerActive = false
+  if (allCards.size === 0 && listenersActive) {
+    listenersActive = false
     document.removeEventListener('pointermove', onPointerMove)
+    window.removeEventListener('scroll', onScroll)
   }
 }
 
 function onPointerMove(e: PointerEvent) {
   lastClientX = e.clientX
   lastClientY = e.clientY
+  hasPointerData = true
+  scheduleFlush()
+}
+
+function onScroll() {
+  if (!hasPointerData) return
+  scheduleFlush()
+}
+
+function scheduleFlush() {
   if (rafPending) return
   rafPending = true
   requestAnimationFrame(flushCards)
