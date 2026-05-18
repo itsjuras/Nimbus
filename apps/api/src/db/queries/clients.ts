@@ -10,6 +10,7 @@ function toClient(row: Record<string, unknown>): Client {
     address: (row['address'] as string | null) ?? null,
     contactName: (row['contact_name'] as string | null) ?? null,
     contactEmail: (row['contact_email'] as string | null) ?? null,
+    contactPhone: (row['contact_phone'] as string | null) ?? null,
     notes: (row['notes'] as string | null) ?? null,
     createdAt: row['created_at'] as string,
   }
@@ -50,6 +51,7 @@ export async function createClient(
       address: input.address ?? null,
       contact_name: input.contactName ?? null,
       contact_email: input.contactEmail ?? null,
+      contact_phone: input.contactPhone ?? null,
       notes: input.notes ?? null,
     })
     .select()
@@ -69,6 +71,7 @@ export async function updateClient(
   if (input.address !== undefined) patch['address'] = input.address
   if (input.contactName !== undefined) patch['contact_name'] = input.contactName
   if (input.contactEmail !== undefined) patch['contact_email'] = input.contactEmail
+  if (input.contactPhone !== undefined) patch['contact_phone'] = input.contactPhone
   if (input.notes !== undefined) patch['notes'] = input.notes
 
   const { data, error } = await supabase

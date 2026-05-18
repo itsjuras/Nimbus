@@ -5,6 +5,7 @@ export interface Client {
   address: string | null
   contactName: string | null
   contactEmail: string | null
+  contactPhone: string | null
   notes: string | null
   createdAt: string
 }

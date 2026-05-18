@@ -5,6 +5,7 @@ export const CreateClientSchema = z.object({
   address: z.string().max(500).optional(),
   contactName: z.string().max(100).optional(),
   contactEmail: z.string().email().optional().or(z.literal('')),
+  contactPhone: z.string().max(30).optional(),
   notes: z.string().max(2000).optional(),
 })
 
