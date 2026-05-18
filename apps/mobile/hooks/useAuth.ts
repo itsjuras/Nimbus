@@ -22,7 +22,7 @@ export function useAuth() {
     supabase.auth.getSession().then(({ data }) => {
       const session = data.session
       if (session) {
-        fetchProfile().then((profile) => {
+        fetchProfile(session.user.id).then((profile) => {
           setState({ session, user: session.user, profile, loading: false })
         })
       } else {
@@ -32,7 +32,7 @@ export function useAuth() {
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        fetchProfile().then((profile) => {
+        fetchProfile(session.user.id).then((profile) => {
           setState({ session, user: session.user, profile, loading: false })
         })
       } else {
@@ -55,9 +55,9 @@ export function useAuth() {
   return { ...state, signIn, signOut }
 }
 
-async function fetchProfile(): Promise<Profile | null> {
+async function fetchProfile(userId: string): Promise<Profile | null> {
   try {
-    const { data, error } = await supabase.from('profiles').select('*').single()
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single()
     if (error) return null
     return data as Profile
   } catch {
