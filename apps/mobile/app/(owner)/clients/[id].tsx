@@ -5,17 +5,21 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useClient, useUpdateClient } from '../../../hooks/useClients'
 import { useJobs } from '../../../hooks/useJobs'
-import { StatusChip } from '../../../components/ui/StatusChip'
+import { useClientChecklist, useUpdateChecklist } from '../../../hooks/useChecklists'
+import type { ChecklistItemDraft } from '../../../hooks/useChecklists'
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner'
+import { Feather } from '@expo/vector-icons'
 
 export default function ClientDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const { dark } = useTheme()
   const [showEdit, setShowEdit] = useState(false)
+  const [showChecklist, setShowChecklist] = useState(false)
 
   const { data: client, isLoading } = useClient(id ?? '')
   const { data: jobs } = useJobs()
+  const { data: checklistData } = useClientChecklist(id ?? null)
 
   const clientJobs = (jobs ?? [])
     .filter((j) => j.clientId === id)
@@ -41,9 +45,7 @@ export default function ClientDetailScreen() {
             <Pressable onPress={() => setShowEdit(true)}>
               <View style={{
                 backgroundColor: dark ? '#f9fafb' : '#111827',
-                borderRadius: 8,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
+                borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6,
               }}>
                 <Text style={{ fontSize: 11, fontWeight: '700', color: dark ? '#111827' : '#ffffff' }}>
                   EDIT CLIENT
@@ -56,16 +58,13 @@ export default function ClientDetailScreen() {
         {client != null && (
           <>
             <Text style={{
-              fontSize: 22,
-              fontWeight: '700',
-              color: textColor,
-              fontFamily: 'IBMPlexMono_700Bold',
-              marginBottom: 20,
-              textTransform: 'uppercase',
+              fontSize: 22, fontWeight: '700', color: textColor,
+              fontFamily: 'IBMPlexMono_700Bold', marginBottom: 20, textTransform: 'uppercase',
             }}>
               {client.name}
             </Text>
 
+            {/* Info card */}
             <View style={{ backgroundColor: cardBg, borderRadius: 12, borderWidth: 1, borderColor, padding: 20, marginBottom: 20, gap: 20 }}>
               {client.address != null && (
                 <View>
@@ -99,6 +98,51 @@ export default function ClientDetailScreen() {
               )}
             </View>
 
+            {/* Checklist section */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.5, color: mutedColor, textTransform: 'uppercase' }}>
+                Checklist
+              </Text>
+              <Pressable onPress={() => setShowChecklist(true)}>
+                <View style={{ backgroundColor: dark ? '#f9fafb' : '#111827', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 }}>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: dark ? '#111827' : '#ffffff' }}>
+                    {checklistData ? 'EDIT' : 'SET UP'}
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+
+            <View style={{ backgroundColor: cardBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 20, overflow: 'hidden' }}>
+              {!checklistData || checklistData.items.length === 0 ? (
+                <Pressable onPress={() => setShowChecklist(true)}>
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <Text style={{ color: mutedColor, fontSize: 14 }}>No checklist items yet</Text>
+                    <Text style={{ color: mutedColor, fontSize: 12, marginTop: 4 }}>Tap SET UP to add items</Text>
+                  </View>
+                </Pressable>
+              ) : (
+                checklistData.items
+                  .slice()
+                  .sort((a, b) => a.position - b.position)
+                  .map((item, i) => (
+                    <View
+                      key={item.id}
+                      style={{
+                        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                        paddingHorizontal: 20, paddingVertical: 14,
+                        borderTopWidth: i === 0 ? 0 : 1, borderTopColor: borderColor,
+                      }}
+                    >
+                      <Text style={{ fontSize: 14, color: textColor, flex: 1 }}>{item.label}</Text>
+                      {item.requiresPhoto && (
+                        <Feather name="camera" size={14} color={mutedColor} style={{ marginLeft: 8 }} />
+                      )}
+                    </View>
+                  ))
+              )}
+            </View>
+
+            {/* Job History */}
             <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.5, color: mutedColor, marginBottom: 12, textTransform: 'uppercase' }}>
               Job History
             </Text>
@@ -126,15 +170,203 @@ export default function ClientDetailScreen() {
       </ScrollView>
 
       {client != null && (
-        <EditClientModal
-          visible={showEdit}
-          onClose={() => setShowEdit(false)}
-          dark={dark}
-          client={client}
-          id={id ?? ''}
-        />
+        <>
+          <EditClientModal
+            visible={showEdit}
+            onClose={() => setShowEdit(false)}
+            dark={dark}
+            client={client}
+            id={id ?? ''}
+          />
+          <EditChecklistModal
+            visible={showChecklist}
+            onClose={() => setShowChecklist(false)}
+            dark={dark}
+            clientId={id ?? ''}
+            clientName={client.name}
+            existingItems={checklistData?.items.slice().sort((a, b) => a.position - b.position) ?? []}
+            existingName={checklistData?.checklist.name ?? `${client.name} Checklist`}
+          />
+        </>
       )}
     </SafeAreaView>
+  )
+}
+
+function EditChecklistModal({
+  visible, onClose, dark, clientId, clientName, existingItems, existingName,
+}: {
+  visible: boolean
+  onClose: () => void
+  dark: boolean
+  clientId: string
+  clientName: string
+  existingItems: { id: string; label: string; requiresPhoto: boolean; position: number }[]
+  existingName: string
+}) {
+  const [name, setName] = useState(existingName)
+  const [items, setItems] = useState<ChecklistItemDraft[]>(
+    existingItems.map((i) => ({ label: i.label, requiresPhoto: i.requiresPhoto, position: i.position }))
+  )
+  const updateChecklist = useUpdateChecklist(clientId)
+
+  const bg = dark ? '#030712' : '#f9fafb'
+  const cardBg = dark ? '#111827' : '#ffffff'
+  const textColor = dark ? '#f9fafb' : '#111827'
+  const mutedColor = dark ? '#6b7280' : '#9ca3af'
+  const borderColor = dark ? '#1f2937' : '#e5e7eb'
+  const inputBg = dark ? '#1f2937' : '#ffffff'
+
+  function addItem() {
+    setItems((prev) => [...prev, { label: '', requiresPhoto: false, position: prev.length }])
+  }
+
+  function removeItem(index: number) {
+    setItems((prev) => prev.filter((_, i) => i !== index).map((item, i) => ({ ...item, position: i })))
+  }
+
+  function updateLabel(index: number, label: string) {
+    setItems((prev) => prev.map((item, i) => i === index ? { ...item, label } : item))
+  }
+
+  function togglePhoto(index: number) {
+    setItems((prev) => prev.map((item, i) => i === index ? { ...item, requiresPhoto: !item.requiresPhoto } : item))
+  }
+
+  async function handleSave() {
+    const validItems = items.filter((i) => i.label.trim()).map((item, idx) => ({
+      label: item.label.trim(),
+      requiresPhoto: item.requiresPhoto,
+      position: idx,
+    }))
+    try {
+      await updateChecklist.mutateAsync({ name: name.trim() || `${clientName} Checklist`, items: validItems })
+      onClose()
+    } catch (err) {
+      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to save checklist.')
+    }
+  }
+
+  // Reset state when modal opens with fresh data
+  const handleOpen = () => {
+    setName(existingName)
+    setItems(existingItems.map((i) => ({ label: i.label, requiresPhoto: i.requiresPhoto, position: i.position })))
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+      onShow={handleOpen}
+    >
+      <View style={{ flex: 1, backgroundColor: bg }}>
+        {/* Header */}
+        <View style={{
+          flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+          paddingHorizontal: 20, paddingTop: 20, paddingBottom: 16,
+        }}>
+          <Pressable onPress={onClose} hitSlop={8}>
+            <Text style={{ fontSize: 15, color: mutedColor }}>Cancel</Text>
+          </Pressable>
+          <Text style={{ fontSize: 16, fontWeight: '700', color: textColor, fontFamily: 'IBMPlexMono_700Bold' }}>
+            CHECKLIST
+          </Text>
+          <View style={{ width: 52 }} />
+        </View>
+
+        <ScrollView contentContainerStyle={{ padding: 20, gap: 20 }}>
+          {/* Checklist name */}
+          <View>
+            <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 1.5, color: mutedColor, marginBottom: 10, textTransform: 'uppercase' }}>
+              Checklist Name
+            </Text>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder={`${clientName} Checklist`}
+              placeholderTextColor={mutedColor}
+              style={{
+                backgroundColor: cardBg, borderRadius: 14, borderWidth: 1, borderColor,
+                paddingHorizontal: 20, paddingVertical: 14, fontSize: 15, color: textColor,
+              }}
+            />
+          </View>
+
+          {/* Items */}
+          <View>
+            <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 1.5, color: mutedColor, marginBottom: 10, textTransform: 'uppercase' }}>
+              Items
+            </Text>
+
+            {items.length > 0 && (
+              <View style={{ backgroundColor: cardBg, borderRadius: 14, borderWidth: 1, borderColor, overflow: 'hidden', marginBottom: 10 }}>
+                {items.map((item, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      flexDirection: 'row', alignItems: 'center', gap: 10,
+                      paddingHorizontal: 16, paddingVertical: 12,
+                      borderTopWidth: index === 0 ? 0 : 1, borderTopColor: borderColor,
+                    }}
+                  >
+                    <TextInput
+                      value={item.label}
+                      onChangeText={(text) => updateLabel(index, text)}
+                      placeholder="Item label"
+                      placeholderTextColor={mutedColor}
+                      style={{ flex: 1, fontSize: 14, color: textColor }}
+                    />
+                    {/* Photo toggle */}
+                    <Pressable onPress={() => togglePhoto(index)} hitSlop={8}>
+                      <View style={{
+                        width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: item.requiresPhoto
+                          ? (dark ? '#f9fafb' : '#111827')
+                          : (dark ? '#1f2937' : '#f3f4f6'),
+                      }}>
+                        <Feather
+                          name="camera"
+                          size={14}
+                          color={item.requiresPhoto ? (dark ? '#111827' : '#ffffff') : mutedColor}
+                        />
+                      </View>
+                    </Pressable>
+                    {/* Remove */}
+                    <Pressable onPress={() => removeItem(index)} hitSlop={8}>
+                      <Text style={{ fontSize: 18, color: mutedColor, lineHeight: 20 }}>×</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Add item */}
+            <Pressable onPress={addItem}>
+              <View style={{
+                borderRadius: 14, borderWidth: 1, borderStyle: 'dashed', borderColor: mutedColor,
+                paddingHorizontal: 20, paddingVertical: 14, alignItems: 'center',
+              }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, letterSpacing: 0.5 }}>+ ADD ITEM</Text>
+              </View>
+            </Pressable>
+          </View>
+
+          {/* Save */}
+          <Pressable onPress={handleSave} disabled={updateChecklist.isPending}>
+            <View style={{
+              backgroundColor: dark ? '#f9fafb' : '#111827',
+              borderRadius: 14, paddingVertical: 16, alignItems: 'center',
+            }}>
+              <Text style={{ fontSize: 14, fontWeight: '700', color: dark ? '#111827' : '#ffffff', letterSpacing: 0.5 }}>
+                {updateChecklist.isPending ? 'SAVING…' : 'SAVE CHECKLIST'}
+              </Text>
+            </View>
+          </Pressable>
+        </ScrollView>
+      </View>
+    </Modal>
   )
 }
 
@@ -160,18 +392,11 @@ function JobPill({
 
   return (
     <Pressable onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut}>
-      <Animated.View
-        style={{
-          backgroundColor: cardBg,
-          borderRadius: 14,
-          borderWidth: 1,
-          borderColor,
-          paddingHorizontal: 20,
-          paddingVertical: 18,
-          alignItems: 'center',
-          transform: [{ scale }],
-        }}
-      >
+      <Animated.View style={{
+        backgroundColor: cardBg, borderRadius: 14, borderWidth: 1, borderColor,
+        paddingHorizontal: 20, paddingVertical: 18, alignItems: 'center',
+        transform: [{ scale }],
+      }}>
         <Text style={{ fontSize: 15, fontWeight: '700', color: textColor, marginBottom: 6 }}>
           {new Date(job.scheduledAt).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
         </Text>
@@ -205,6 +430,15 @@ function EditClientModal({
   const borderColor = dark ? '#1f2937' : '#e5e7eb'
   const inputBg = dark ? '#1f2937' : '#ffffff'
 
+  function handleOpen() {
+    setName(client.name)
+    setAddress(client.address ?? '')
+    setContactName(client.contactName ?? '')
+    setContactEmail(client.contactEmail ?? '')
+    setContactPhone(client.contactPhone ?? '')
+    setNotes(client.notes ?? '')
+  }
+
   async function handleSave() {
     if (!name.trim()) return
     try {
@@ -223,17 +457,12 @@ function EditClientModal({
   }
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose} onShow={handleOpen}>
       <View style={{ flex: 1, backgroundColor: dark ? '#030712' : '#f9fafb' }}>
         <View style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 20,
-          paddingTop: 20,
-          paddingBottom: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: borderColor,
+          flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+          paddingHorizontal: 20, paddingTop: 20, paddingBottom: 16,
+          borderBottomWidth: 1, borderBottomColor: borderColor,
         }}>
           <Pressable onPress={onClose} hitSlop={8}>
             <Text style={{ fontSize: 15, color: mutedColor }}>Cancel</Text>
@@ -264,14 +493,8 @@ function EditClientModal({
                 keyboardType={keyboard as any}
                 autoCapitalize="none"
                 style={{
-                  backgroundColor: inputBg,
-                  borderWidth: 1,
-                  borderColor,
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 13,
-                  fontSize: 15,
-                  color: textColor,
+                  backgroundColor: inputBg, borderWidth: 1, borderColor, borderRadius: 12,
+                  paddingHorizontal: 16, paddingVertical: 13, fontSize: 15, color: textColor,
                 }}
               />
             </View>
@@ -289,16 +512,9 @@ function EditClientModal({
               multiline
               numberOfLines={3}
               style={{
-                backgroundColor: inputBg,
-                borderWidth: 1,
-                borderColor,
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 13,
-                fontSize: 15,
-                color: textColor,
-                minHeight: 80,
-                textAlignVertical: 'top',
+                backgroundColor: inputBg, borderWidth: 1, borderColor, borderRadius: 12,
+                paddingHorizontal: 16, paddingVertical: 13, fontSize: 15, color: textColor,
+                minHeight: 80, textAlignVertical: 'top',
               }}
             />
           </View>
@@ -308,10 +524,7 @@ function EditClientModal({
             disabled={!name.trim() || updateClient.isPending}
             style={{
               backgroundColor: name.trim() ? (dark ? '#f9fafb' : '#111827') : (dark ? '#1f2937' : '#e5e7eb'),
-              borderRadius: 14,
-              paddingVertical: 16,
-              alignItems: 'center',
-              marginTop: 4,
+              borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 4,
             }}
           >
             <Text style={{ fontSize: 15, fontWeight: '700', color: name.trim() ? (dark ? '#111827' : '#ffffff') : mutedColor }}>

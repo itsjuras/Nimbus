@@ -268,71 +268,45 @@ export default function CalendarScreen() {
             </View>
 
             {/* Body */}
-            <View style={{ paddingHorizontal: 12, paddingVertical: 12 }}>
+            <ScrollView contentContainerStyle={{ padding: 12, gap: 8 }}>
               {selectedJobs.length === 0 ? (
-                <Text
-                  style={{
-                    color: mutedColor,
-                    textAlign: 'center',
-                    paddingVertical: 24,
-                    fontSize: 14,
-                  }}
-                >
+                <Text style={{ color: mutedColor, textAlign: 'center', paddingVertical: 24, fontSize: 14 }}>
                   No jobs scheduled
                 </Text>
               ) : (
-                <ScrollView>
-                  {selectedJobs.map((job) => {
-                    const chip = chipStyle(job.status, dark)
-                    return (
-                      <Pressable
-                        key={job.id}
-                        onPress={() => {
-                          setSelectedDate(null)
-                          router.push(`/(owner)/jobs/${job.id}`)
-                        }}
-                        style={({ pressed }) => ({
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          paddingHorizontal: 12,
-                          paddingVertical: 10,
-                          borderRadius: 12,
-                          backgroundColor: pressed ? (dark ? '#1f2937' : '#f9fafb') : 'transparent',
-                        })}
-                      >
-                        <View style={{ flex: 1, marginRight: 12, minWidth: 0 }}>
-                          <Text
-                            numberOfLines={1}
-                            style={{ fontSize: 14, fontWeight: '500', color: textColor }}
-                          >
-                            {clientMap.get(job.clientId) ?? '—'}
-                          </Text>
-                          <Text style={{ fontSize: 12, color: mutedColor, marginTop: 2 }}>
-                            {new Date(job.scheduledAt).toLocaleTimeString('en-US', {
-                              hour: 'numeric',
-                              minute: '2-digit',
-                            })}
-                          </Text>
-                        </View>
-                        <View
-                          style={{
-                            backgroundColor: chip.bg,
-                            borderRadius: 4,
-                            paddingHorizontal: 8,
-                            paddingVertical: 2,
-                          }}
-                        >
-                          <Text style={{ fontSize: 11, fontWeight: '500', color: chip.text }}>
+                selectedJobs.map((job) => {
+                  const chip = chipStyle(job.status, dark)
+                  return (
+                    <Pressable
+                      key={job.id}
+                      onPress={() => { setSelectedDate(null); router.push(`/(owner)/jobs/${job.id}`) }}
+                    >
+                      <View style={{
+                        backgroundColor: bg,
+                        borderRadius: 14,
+                        borderWidth: 1,
+                        borderColor,
+                        paddingHorizontal: 20,
+                        paddingVertical: 16,
+                        alignItems: 'center',
+                      }}>
+                        <Text style={{ fontSize: 15, fontWeight: '700', color: textColor, marginBottom: 4, textAlign: 'center' }}>
+                          {clientMap.get(job.clientId) ?? '—'}
+                        </Text>
+                        <Text style={{ fontSize: 13, color: mutedColor, marginBottom: 10 }}>
+                          {new Date(job.scheduledAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                        </Text>
+                        <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, backgroundColor: chip.bg }}>
+                          <Text style={{ fontSize: 10, fontWeight: '600', letterSpacing: 1, color: chip.text }}>
                             {STATUS_LABEL[job.status]}
                           </Text>
                         </View>
-                      </Pressable>
-                    )
-                  })}
-                </ScrollView>
+                      </View>
+                    </Pressable>
+                  )
+                })
               )}
-            </View>
+            </ScrollView>
           </Pressable>
         </Pressable>
       </Modal>

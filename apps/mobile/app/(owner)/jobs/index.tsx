@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useJobs, useCreateJob, useClientChecklist } from '../../../hooks/useJobs'
 import { useClients } from '../../../hooks/useClients'
 import { useCrewMembers } from '../../../hooks/useCrew'
+import { useCreateInvoice } from '../../../hooks/useInvoices'
 import { JobCard } from '../../../components/jobs/JobCard'
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner'
 import { EmptyState } from '../../../components/ui/EmptyState'
@@ -107,6 +108,8 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
   const [notes, setNotes] = useState('')
   const [isRecurring, setIsRecurring] = useState(false)
   const [recurrence, setRecurrence] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('weekly')
+  const [generateInvoice, setGenerateInvoice] = useState(false)
+  const [invoiceAmount, setInvoiceAmount] = useState('')
   const [showClientPicker, setShowClientPicker] = useState(false)
   const [showCrewPicker, setShowCrewPicker] = useState(false)
 
@@ -114,6 +117,7 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
   const { data: crew } = useCrewMembers()
   const { data: checklist } = useClientChecklist(selectedClient?.id ?? null)
   const createJob = useCreateJob()
+  const createInvoice = useCreateInvoice()
 
   const bg = dark ? '#030712' : '#f9fafb'
   const cardBg = dark ? '#111827' : '#ffffff'
@@ -128,6 +132,8 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
     setNotes('')
     setIsRecurring(false)
     setRecurrence('weekly')
+    setGenerateInvoice(false)
+    setInvoiceAmount('')
   }
 
   function handleClose() {
@@ -140,22 +146,37 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
   }
 
   async function handleSubmit() {
-    if (!selectedClient || !checklist || selectedCrew.length === 0) return
+    if (!selectedClient || selectedCrew.length === 0) return
     try {
       await createJob.mutateAsync({
         clientId: selectedClient.id,
-        checklistId: checklist.id,
+        checklistId: checklist?.id,
         scheduledAt: scheduledAt.toISOString(),
         notes: notes.trim() || undefined,
         crewIds: selectedCrew.map((m) => m.id),
       })
+      if (generateInvoice && invoiceAmount.trim()) {
+        const total = Math.round(parseFloat(invoiceAmount) * 100)
+        if (!isNaN(total) && total > 0) {
+          const dueAt = new Date(scheduledAt)
+          dueAt.setDate(dueAt.getDate() + 30)
+          await createInvoice.mutateAsync({
+            clientId: selectedClient.id,
+            total,
+            issuedAt: scheduledAt.toISOString(),
+            dueAt: dueAt.toISOString(),
+          })
+        }
+      }
       handleClose()
-    } catch {
-      Alert.alert('Error', 'Failed to schedule job. Please try again.')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      Alert.alert('Error', msg)
     }
   }
 
-  const canSubmit = selectedClient != null && checklist != null && selectedCrew.length > 0 && !createJob.isPending
+  const isPending = createJob.isPending || createInvoice.isPending
+  const canSubmit = selectedClient != null && selectedCrew.length > 0 && !isPending
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
@@ -236,55 +257,34 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
           {/* REPEAT */}
           <View>
             <SectionLabel label="Repeat" color={mutedColor} />
-            <View style={{
-              flexDirection: 'row', backgroundColor: cardBg,
-              borderRadius: 14, borderWidth: 1, borderColor, padding: 4, gap: 4,
-            }}>
-              {(['one-time', 'recurring'] as const).map((option) => {
-                const active = option === (isRecurring ? 'recurring' : 'one-time')
-                return (
-                  <Pressable
-                    key={option}
-                    onPress={() => setIsRecurring(option === 'recurring')}
-                    style={{ flex: 1 }}
-                  >
-                    <View style={{
-                      borderRadius: 10, paddingVertical: 10, alignItems: 'center',
-                      backgroundColor: active ? (dark ? '#f9fafb' : '#111827') : 'transparent',
-                    }}>
-                      <Text style={{
-                        fontSize: 12, fontWeight: '700', letterSpacing: 0.5,
-                        color: active ? (dark ? '#111827' : '#ffffff') : mutedColor,
-                      }}>
-                        {option === 'one-time' ? 'ONE TIME' : 'RECURRING'}
-                      </Text>
-                    </View>
-                  </Pressable>
-                )
-              })}
-            </View>
-
+            <SegmentedControl
+              options={[{ value: 'one-time', label: 'ONE TIME' }, { value: 'recurring', label: 'RECURRING' }]}
+              selected={isRecurring ? 'recurring' : 'one-time'}
+              onSelect={(v) => setIsRecurring(v === 'recurring')}
+              dark={dark}
+              cardBg={cardBg}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              borderColor={borderColor}
+            />
             {isRecurring && (
-              <View style={{ flexDirection: 'row', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                {(['daily', 'weekly', 'biweekly', 'monthly'] as const).map((freq) => {
-                  const active = recurrence === freq
-                  const labels = { daily: 'DAILY', weekly: 'WEEKLY', biweekly: 'BIWEEKLY', monthly: 'MONTHLY' }
-                  return (
-                    <Pressable key={freq} onPress={() => setRecurrence(freq)}>
-                      <View style={{
-                        borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8,
-                        backgroundColor: active ? (dark ? '#f9fafb' : '#111827') : (dark ? '#1f2937' : '#f3f4f6'),
-                      }}>
-                        <Text style={{
-                          fontSize: 11, fontWeight: '700', letterSpacing: 0.5,
-                          color: active ? (dark ? '#111827' : '#ffffff') : mutedColor,
-                        }}>
-                          {labels[freq]}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  )
-                })}
+              <View style={{ marginTop: 10 }}>
+                <SegmentedControl
+                  options={[
+                    { value: 'daily', label: 'DAILY' },
+                    { value: 'weekly', label: 'WEEKLY' },
+                    { value: 'biweekly', label: 'BIWEEKLY' },
+                    { value: 'monthly', label: 'MONTHLY' },
+                  ]}
+                  selected={recurrence}
+                  onSelect={(v) => setRecurrence(v as typeof recurrence)}
+                  dark={dark}
+                  cardBg={cardBg}
+                  textColor={textColor}
+                  mutedColor={mutedColor}
+                  borderColor={borderColor}
+                  slim
+                />
               </View>
             )}
           </View>
@@ -318,6 +318,40 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
             </Pressable>
           </View>
 
+          {/* INVOICE */}
+          <View>
+            <SectionLabel label="Invoice" color={mutedColor} />
+            <SegmentedControl
+              options={[{ value: 'no', label: 'NO INVOICE' }, { value: 'yes', label: 'GENERATE INVOICE' }]}
+              selected={generateInvoice ? 'yes' : 'no'}
+              onSelect={(v) => setGenerateInvoice(v === 'yes')}
+              dark={dark}
+              cardBg={cardBg}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              borderColor={borderColor}
+            />
+            {generateInvoice && (
+              <View style={{ marginTop: 10 }}>
+                <TextInput
+                  value={invoiceAmount}
+                  onChangeText={setInvoiceAmount}
+                  placeholder="Amount (e.g. 250.00)"
+                  placeholderTextColor={mutedColor}
+                  keyboardType="decimal-pad"
+                  style={{
+                    backgroundColor: cardBg, borderRadius: 14, borderWidth: 1, borderColor,
+                    paddingHorizontal: 20, paddingVertical: 14,
+                    fontSize: 15, color: textColor,
+                  }}
+                />
+                <Text style={{ fontSize: 11, color: mutedColor, marginTop: 6, marginLeft: 4 }}>
+                  Invoice will be created as a draft, due 30 days from the job date.
+                </Text>
+              </View>
+            )}
+          </View>
+
           {/* NOTES */}
           <View>
             <SectionLabel label="Notes (optional)" color={mutedColor} />
@@ -343,7 +377,7 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
               borderRadius: 14, paddingVertical: 16, alignItems: 'center',
             }}>
               <Text style={{ fontSize: 14, fontWeight: '700', color: canSubmit ? (dark ? '#111827' : '#ffffff') : mutedColor, letterSpacing: 0.5 }}>
-                {createJob.isPending ? 'SCHEDULING…' : 'SCHEDULE JOB'}
+                {isPending ? 'SCHEDULING…' : 'SCHEDULE JOB'}
               </Text>
             </View>
           </Pressable>
@@ -377,10 +411,7 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
               {(clients ?? []).map((client) => (
                 <Pressable
                   key={client.id}
-                  onPress={() => {
-                    setSelectedClient(client)
-                    setShowClientPicker(false)
-                  }}
+                  onPress={() => { setSelectedClient(client); setShowClientPicker(false) }}
                 >
                   <View style={{
                     backgroundColor: dark ? '#1f2937' : '#f9fafb',
@@ -426,10 +457,7 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
               {(crew ?? []).filter((m) => !selectedCrew.some((s) => s.id === m.id)).map((member) => (
                 <Pressable
                   key={member.id}
-                  onPress={() => {
-                    setSelectedCrew((prev) => [...prev, member])
-                    setShowCrewPicker(false)
-                  }}
+                  onPress={() => { setSelectedCrew((prev) => [...prev, member]); setShowCrewPicker(false) }}
                 >
                   <View style={{
                     backgroundColor: dark ? '#1f2937' : '#f9fafb',
@@ -453,6 +481,49 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
         </Pressable>
       </Modal>
     </Modal>
+  )
+}
+
+function SegmentedControl({
+  options, selected, onSelect, dark, cardBg, textColor, mutedColor, borderColor, slim,
+}: {
+  options: { value: string; label: string }[]
+  selected: string
+  onSelect: (value: string) => void
+  dark: boolean
+  cardBg: string
+  textColor: string
+  mutedColor: string
+  borderColor: string
+  slim?: boolean
+}) {
+  const activeBg = dark ? '#f9fafb' : '#111827'
+  const activeText = dark ? '#111827' : '#ffffff'
+
+  return (
+    <View style={{
+      flexDirection: 'row', backgroundColor: cardBg,
+      borderRadius: 14, borderWidth: 1, borderColor, padding: 4, gap: 4,
+    }}>
+      {options.map(({ value, label }) => {
+        const active = selected === value
+        return (
+          <Pressable key={value} onPress={() => onSelect(value)} style={{ flex: 1 }}>
+            <View style={{
+              borderRadius: 10, paddingVertical: slim ? 8 : 10, alignItems: 'center',
+              backgroundColor: active ? activeBg : 'transparent',
+            }}>
+              <Text style={{
+                fontSize: slim ? 10 : 12, fontWeight: '700', letterSpacing: 0.5,
+                color: active ? activeText : mutedColor,
+              }}>
+                {label}
+              </Text>
+            </View>
+          </Pressable>
+        )
+      })}
+    </View>
   )
 }
 
@@ -505,7 +576,6 @@ function MiniCalendar({
         touchStartX.current = null
       }}
     >
-      {/* Month navigation */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <Pressable onPress={() => setCurrent(new Date(year, month - 1, 1))} hitSlop={12} style={{ padding: 6 }}>
           <Text style={{ color: textColor, fontSize: 20, lineHeight: 22 }}>‹</Text>
@@ -518,7 +588,6 @@ function MiniCalendar({
         </Pressable>
       </View>
 
-      {/* Weekday headers */}
       <View style={{ flexDirection: 'row', marginBottom: 4 }}>
         {WDAYS.map((d, i) => (
           <View key={i} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
@@ -527,7 +596,6 @@ function MiniCalendar({
         ))}
       </View>
 
-      {/* Day grid */}
       {weeks.map((week, wi) => (
         <View key={wi} style={{ flexDirection: 'row' }}>
           {week.map((cell, di) => {
@@ -599,45 +667,44 @@ function TimeScrollPicker({
   const highlightBg = dark ? '#1f2937' : '#f3f4f6'
 
   return (
-    <View style={{ overflow: 'hidden' }}>
-      {/* Selection band */}
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          top: ITEM_H, left: 0, right: 0, height: ITEM_H,
-          backgroundColor: highlightBg,
-          borderRadius: 10,
-        }}
-      />
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <ScrollColumn
-          items={HOURS}
-          initialIdx={hourIdx}
-          onSelectIdx={(idx) => { setHourIdx(idx); applyTime(idx, minIdx, isAM) }}
-          textColor={textColor}
-          mutedColor={mutedColor}
-        />
-        <Text style={{ fontSize: 22, fontWeight: '700', color: textColor, width: 12, textAlign: 'center' }}>:</Text>
-        <ScrollColumn
-          items={MINUTES}
-          initialIdx={minIdx}
-          onSelectIdx={(idx) => { setMinIdx(idx); applyTime(hourIdx, idx, isAM) }}
-          textColor={textColor}
-          mutedColor={mutedColor}
-        />
-        <Pressable
-          onPress={() => {
-            const next = !isAM
-            setIsAM(next)
-            applyTime(hourIdx, minIdx, next)
+    <View>
+      <View style={{ overflow: 'hidden' }}>
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: ITEM_H, left: 0, right: 0, height: ITEM_H,
+            backgroundColor: highlightBg,
+            borderRadius: 10,
           }}
-          style={{ width: 56, height: ITEM_H * 3, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <Text style={{ fontSize: 15, fontWeight: '700', color: textColor }}>{isAM ? 'AM' : 'PM'}</Text>
-        </Pressable>
+        />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <ScrollColumn
+            items={HOURS}
+            initialIdx={hourIdx}
+            onSelectIdx={(idx) => { setHourIdx(idx); applyTime(idx, minIdx, isAM) }}
+            textColor={textColor}
+            mutedColor={mutedColor}
+          />
+          <Text style={{ fontSize: 22, fontWeight: '700', color: textColor, width: 16, textAlign: 'center' }}>:</Text>
+          <ScrollColumn
+            items={MINUTES}
+            initialIdx={minIdx}
+            onSelectIdx={(idx) => { setMinIdx(idx); applyTime(hourIdx, idx, isAM) }}
+            textColor={textColor}
+            mutedColor={mutedColor}
+          />
+          <ScrollColumn
+            items={['AM', 'PM']}
+            initialIdx={isAM ? 0 : 1}
+            onSelectIdx={(idx) => { const am = idx === 0; setIsAM(am); applyTime(hourIdx, minIdx, am) }}
+            textColor={textColor}
+            mutedColor={mutedColor}
+          />
+          <View style={{ width: 16 }} />
+        </View>
       </View>
-    </View>
+</View>
   )
 }
 

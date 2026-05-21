@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useJob, useUpdateJob } from '../../../hooks/useJobs'
 import { StatusChip } from '../../../components/ui/StatusChip'
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner'
+import { Feather } from '@expo/vector-icons'
 import type { JobStatus } from '@nimbus/shared'
 
 const STATUS_TRANSITIONS: { from: JobStatus; to: JobStatus; label: string }[] = [
@@ -111,9 +112,12 @@ export default function OwnerJobDetailScreen() {
                   {item.label}
                 </Text>
                 {item.requiresPhoto && (
-                  <Text style={{ fontSize: 11, color: item.photos.length > 0 ? mutedColor : '#ef4444' }}>
-                    {item.photos.length > 0 ? `📷 ${item.photos.length}` : '📷 req.'}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Feather name="camera" size={13} color={item.photos.length > 0 ? mutedColor : '#ef4444'} />
+                    {item.photos.length > 0 && (
+                      <Text style={{ fontSize: 11, color: mutedColor }}>{item.photos.length}</Text>
+                    )}
+                  </View>
                 )}
               </View>
             ))}
@@ -167,16 +171,20 @@ export default function OwnerJobDetailScreen() {
             key={to}
             onPress={() => updateJob.mutate({ status: to })}
             disabled={updateJob.isPending}
-            style={({ pressed }) => ({
-              backgroundColor: dark ? '#1f2937' : '#f3f4f6',
-              borderRadius: 12,
-              paddingVertical: 14,
-              alignItems: 'center',
-              opacity: pressed ? 0.8 : 1,
-              marginBottom: 10,
-            })}
           >
-            <Text style={{ fontSize: 14, fontWeight: '600', color: mutedColor }}>{label}</Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: mutedColor,
+                borderRadius: 10,
+                paddingVertical: 10,
+                alignItems: 'center',
+                marginBottom: 10,
+                backgroundColor: 'transparent',
+              }}
+            >
+              <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor }}>{label}</Text>
+            </View>
           </Pressable>
         ))}
       </ScrollView>

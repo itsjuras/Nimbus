@@ -10,7 +10,7 @@ import {
   seedJobChecklistItems,
 } from '../db/queries/jobs.js'
 import { getClientById } from '../db/queries/clients.js'
-import { getChecklistByClientId } from '../db/queries/checklists.js'
+import { getChecklistByClientId, upsertChecklist } from '../db/queries/checklists.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { notifyCrewJobAssigned, notifyOwnersJobStatusChanged } from '../lib/push.js'
 import type { Job, JobDetail, CreateJobRequest, UpdateJobRequest, JobFilters } from '@nimbus/shared'
@@ -33,15 +33,17 @@ export async function createJob(
   const client = await getClientById(input.clientId, companyId)
   if (!client) throw new AppError('CLIENT_NOT_FOUND', 'No client found with that ID', 404)
 
-  // Validate checklist belongs to this client
-  const checklist = await getChecklistByClientId(input.clientId, companyId)
-  if (!checklist || checklist.checklist.id !== input.checklistId) {
-    throw new AppError('CHECKLIST_NOT_FOUND', 'Checklist does not belong to this client', 404)
+  // Resolve checklist — use provided ID, or look it up, or auto-create an empty one
+  const checklistRecord = await getChecklistByClientId(input.clientId, companyId)
+  let checklistId = input.checklistId ?? checklistRecord?.checklist.id
+  if (!checklistId) {
+    const created = await upsertChecklist(input.clientId, companyId, `${client.name} Checklist`)
+    checklistId = created.id
   }
 
   const job = await createJobQuery(companyId, {
     clientId: input.clientId,
-    checklistId: input.checklistId,
+    checklistId,
     scheduledAt: input.scheduledAt,
     ...(input.notes !== undefined && { notes: input.notes }),
   })
@@ -49,7 +51,7 @@ export async function createJob(
   // Assign crew and seed checklist items in parallel
   await Promise.all([
     setJobCrew(job.id, input.crewIds),
-    seedJobChecklistItems(job.id, input.checklistId),
+    seedJobChecklistItems(job.id, checklistId),
   ])
 
   // Notify assigned crew (fire-and-forget)

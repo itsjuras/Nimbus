@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const CreateJobSchema = z.object({
   clientId: z.string().uuid(),
-  checklistId: z.string().uuid(),
+  checklistId: z.string().uuid().optional(),
   scheduledAt: z.string().datetime(),
   notes: z.string().max(2000).optional(),
   crewIds: z.array(z.string().uuid()).min(1, 'Assign at least one crew member'),
