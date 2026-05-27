@@ -94,27 +94,46 @@ export async function replaceChecklistItems(
   checklistId: string,
   items: ChecklistItemInput[],
 ): Promise<ChecklistItem[]> {
-  // Delete all existing items then insert the new set
-  const { error: deleteError } = await supabase
+  // Fetch existing items so we can reuse their IDs (preserves job_checklist_items FK links)
+  const { data: existing } = await supabase
     .from('checklist_items')
-    .delete()
+    .select('id')
     .eq('checklist_id', checklistId)
+    .order('position')
 
-  if (deleteError) throw deleteError
+  const existingIds = ((existing ?? []) as Record<string, unknown>[]).map((r) => r['id'] as string)
 
-  if (items.length === 0) return []
+  // Update items that already exist (same position slot) — keeps UUID intact
+  for (let i = 0; i < Math.min(items.length, existingIds.length); i++) {
+    await supabase
+      .from('checklist_items')
+      .update({ label: items[i]!.label, requires_photo: items[i]!.requiresPhoto, position: i })
+      .eq('id', existingIds[i]!)
+  }
 
-  const { data, error } = await supabase
-    .from('checklist_items')
-    .insert(
-      items.map((item) => ({
+  // Delete extra existing items that are beyond the new list length
+  const toDelete = existingIds.slice(items.length)
+  if (toDelete.length > 0) {
+    await supabase.from('checklist_items').delete().in('id', toDelete)
+  }
+
+  // Insert brand-new items that go beyond existing count
+  if (items.length > existingIds.length) {
+    const newItems = items.slice(existingIds.length)
+    await supabase.from('checklist_items').insert(
+      newItems.map((item, i) => ({
         checklist_id: checklistId,
         label: item.label,
         requires_photo: item.requiresPhoto,
-        position: item.position,
+        position: existingIds.length + i,
       })),
     )
-    .select()
+  }
+
+  const { data, error } = await supabase
+    .from('checklist_items')
+    .select('*')
+    .eq('checklist_id', checklistId)
     .order('position')
 
   if (error) throw error

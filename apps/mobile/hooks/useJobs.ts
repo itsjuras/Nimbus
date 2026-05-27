@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
-import type { Job, JobDetail, UpdateJobRequest, JobFilters, CreateJobRequest, Checklist } from '@nimbus/shared'
+import type { Job, JobDetail, UpdateJobRequest, JobFilters, CreateJobRequest } from '@nimbus/shared'
 
 export const JOBS_KEY = ['jobs'] as const
 
@@ -44,6 +44,31 @@ export function useStartJob() {
   })
 }
 
+export function useReseedJobChecklist(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.post<JobDetail>(`/api/v1/jobs/${id}/reseed-checklist`, {}),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [...JOBS_KEY, id] }),
+  })
+}
+
+export function useMissJob(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.post<Job>(`/api/v1/jobs/${id}/miss`, {}),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: JOBS_KEY }),
+  })
+}
+
+export function useMarkItemComplete(jobId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { checklistItemId: string; completed: boolean }) =>
+      api.patch(`/api/v1/jobs/${jobId}/checklist-items`, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [...JOBS_KEY, jobId] }),
+  })
+}
+
 export function useCreateJob() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -52,10 +77,11 @@ export function useCreateJob() {
   })
 }
 
-export function useClientChecklist(clientId: string | null) {
-  return useQuery({
-    queryKey: ['checklists', clientId],
-    queryFn: () => api.get<Checklist>(`/api/v1/checklists/${clientId}`),
-    enabled: !!clientId,
+export function useDeleteJob() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/api/v1/jobs/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: JOBS_KEY }),
   })
 }
+

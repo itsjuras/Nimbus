@@ -23,9 +23,6 @@ export async function markItemComplete(
   if (job.status === 'completed') {
     throw new AppError('JOB_COMPLETED', 'Job is already completed', 400)
   }
-  if (job.status === 'scheduled') {
-    throw new AppError('JOB_NOT_STARTED', 'Job has not been started yet', 400)
-  }
 
   return markChecklistItemComplete(jobId, checklistItemId, profileId, completed)
 }

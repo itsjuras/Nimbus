@@ -9,6 +9,8 @@ import {
   updateJob,
   deleteJob,
   startJob,
+  missJob,
+  reseedJobChecklist,
 } from '../services/jobService.js'
 import {
   markItemComplete,
@@ -89,6 +91,26 @@ jobsRouter.delete('/:id', requireRole('owner', 'manager'), async (req, res, next
 jobsRouter.post('/:id/start', async (req, res, next) => {
   try {
     const job = await startJob(String(req.params['id']), req.user.companyId)
+    res.json(job)
+  } catch (err) {
+    next(err)
+  }
+})
+
+// POST /api/v1/jobs/:id/reseed-checklist
+jobsRouter.post('/:id/reseed-checklist', requireRole('owner', 'manager'), async (req, res, next) => {
+  try {
+    const job = await reseedJobChecklist(String(req.params['id']), req.user.companyId)
+    res.json(job)
+  } catch (err) {
+    next(err)
+  }
+})
+
+// POST /api/v1/jobs/:id/miss
+jobsRouter.post('/:id/miss', requireRole('owner', 'manager'), async (req, res, next) => {
+  try {
+    const job = await missJob(String(req.params['id']), req.user.companyId)
     res.json(job)
   } catch (err) {
     next(err)

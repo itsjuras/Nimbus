@@ -22,7 +22,8 @@ export async function markChecklistItemComplete(
     ? { completed: true, completed_by: profileId, completed_at: new Date().toISOString() }
     : { completed: false, completed_by: null, completed_at: null }
 
-  const { data, error } = await supabase
+  // Try to update existing row
+  const { data: updated } = await supabase
     .from('job_checklist_items')
     .update(patch)
     .eq('job_id', jobId)
@@ -30,8 +31,17 @@ export async function markChecklistItemComplete(
     .select()
     .single()
 
-  if (error || !data) throw new Error(error?.message ?? 'Failed to update checklist item')
-  return toJobChecklistItem(data as Record<string, unknown>)
+  if (updated) return toJobChecklistItem(updated as Record<string, unknown>)
+
+  // Row missing (e.g. cascade-deleted after checklist edit) — insert it now
+  const { data: inserted, error } = await supabase
+    .from('job_checklist_items')
+    .insert({ job_id: jobId, checklist_item_id: checklistItemId, ...patch })
+    .select()
+    .single()
+
+  if (error || !inserted) throw new Error(error?.message ?? 'Failed to update checklist item')
+  return toJobChecklistItem(inserted as Record<string, unknown>)
 }
 
 export async function insertJobPhoto(

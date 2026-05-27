@@ -2,7 +2,8 @@ import { useState, useRef } from 'react'
 import { View, Text, ScrollView, Pressable, Modal, TextInput, Alert } from 'react-native'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useJobs, useCreateJob, useClientChecklist } from '../../../hooks/useJobs'
+import { useJobs, useCreateJob } from '../../../hooks/useJobs'
+import { useClientChecklist } from '../../../hooks/useChecklists'
 import { useClients } from '../../../hooks/useClients'
 import { useCrewMembers } from '../../../hooks/useCrew'
 import { useCreateInvoice } from '../../../hooks/useInvoices'
@@ -148,12 +149,19 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
   async function handleSubmit() {
     if (!selectedClient || selectedCrew.length === 0) return
     try {
+      const occurrencesMap = { daily: 30, weekly: 52, biweekly: 26, monthly: 12 }
       await createJob.mutateAsync({
         clientId: selectedClient.id,
-        checklistId: checklist?.id,
+        checklistId: checklist?.checklist.id,
         scheduledAt: scheduledAt.toISOString(),
         notes: notes.trim() || undefined,
         crewIds: selectedCrew.map((m) => m.id),
+        ...(isRecurring && {
+          recurrence: {
+            frequency: recurrence,
+            occurrences: occurrencesMap[recurrence],
+          },
+        }),
       })
       if (generateInvoice && invoiceAmount.trim()) {
         const total = Math.round(parseFloat(invoiceAmount) * 100)

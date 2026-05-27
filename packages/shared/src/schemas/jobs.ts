@@ -6,6 +6,10 @@ export const CreateJobSchema = z.object({
   scheduledAt: z.string().datetime(),
   notes: z.string().max(2000).optional(),
   crewIds: z.array(z.string().uuid()).min(1, 'Assign at least one crew member'),
+  recurrence: z.object({
+    frequency: z.enum(['daily', 'weekly', 'biweekly', 'monthly']),
+    occurrences: z.number().int().min(2).max(52),
+  }).optional(),
 })
 
 export const UpdateJobSchema = z.object({

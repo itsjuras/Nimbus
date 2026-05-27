@@ -212,6 +212,10 @@ export async function setJobCrew(jobId: string, crewIds: string[]): Promise<void
   if (error) throw error
 }
 
+export async function clearJobChecklistItems(jobId: string): Promise<void> {
+  await supabase.from('job_checklist_items').delete().eq('job_id', jobId)
+}
+
 export async function seedJobChecklistItems(
   jobId: string,
   checklistId: string,
