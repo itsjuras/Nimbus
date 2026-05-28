@@ -175,13 +175,16 @@ function AddClientModal({ visible, onClose, dark }: { visible: boolean; onClose:
   }
 
   async function handleSubmit() {
-    if (!name.trim()) return
+    if (!name.trim() || !address.trim() || !contactName.trim() || !contactEmail.trim()) {
+      Alert.alert('Required', 'Please fill in name, address, contact name, and contact email.')
+      return
+    }
     try {
       await createClient.mutateAsync({
         name: name.trim(),
-        address: address.trim() || undefined,
-        contactName: contactName.trim() || undefined,
-        contactEmail: contactEmail.trim() || undefined,
+        address: address.trim(),
+        contactName: contactName.trim(),
+        contactEmail: contactEmail.trim(),
         contactPhone: contactPhone.trim() || undefined,
         notes: notes.trim() || undefined,
       })

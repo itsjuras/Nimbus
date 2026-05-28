@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { SidebarToggle } from '../../components/ui/SidebarToggle'
-import { Link, useNavigate } from 'react-router-dom'
+import { Modal } from '../../components/ui/Modal'
+import { useNavigate } from 'react-router-dom'
+
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CreateClientSchema, type CreateClientRequest } from '@nimbus/shared'
@@ -8,7 +10,7 @@ import { useClients, useCreateClient, useDeleteClient } from '../../hooks/useCli
 import { useTheme } from '../../hooks/useTheme'
 
 export default function ClientsPage() {
-  const [showForm, setShowForm] = useState(false)
+  const [showModal, setShowModal] = useState(false)
   const { data: clients, isLoading } = useClients()
   const createClient = useCreateClient()
   const deleteClient = useDeleteClient()
@@ -25,7 +27,12 @@ export default function ClientsPage() {
   async function onSubmit(data: CreateClientRequest) {
     await createClient.mutateAsync(data)
     reset()
-    setShowForm(false)
+    setShowModal(false)
+  }
+
+  function handleClose() {
+    reset()
+    setShowModal(false)
   }
 
   return (
@@ -34,10 +41,10 @@ export default function ClientsPage() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Clients</h1>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setShowForm((v) => !v)}
+            onClick={() => setShowModal(true)}
             className="rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold uppercase text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200"
           >
-            {showForm ? 'Cancel' : 'Add client'}
+            Add client
           </button>
           <SidebarToggle />
           <button
@@ -58,33 +65,25 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      {showForm && (
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="mb-6 space-y-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6"
-        >
-          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">New client</h2>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Company / building name *" error={errors.name?.message}>
-              <input {...register('name')} placeholder="Acme HQ" className={inputClass} />
-            </Field>
-            <Field label="Address" error={errors.address?.message}>
-              <input {...register('address')} placeholder="123 Main St" className={inputClass} />
-            </Field>
-            <Field label="Contact name" error={errors.contactName?.message}>
-              <input {...register('contactName')} placeholder="John Doe" className={inputClass} />
-            </Field>
-            <Field label="Contact email" error={errors.contactEmail?.message}>
-              <input
-                {...register('contactEmail')}
-                type="email"
-                placeholder="john@acme.com"
-                className={inputClass}
-              />
-            </Field>
-          </div>
-
+      <Modal open={showModal} onClose={handleClose} title="Add Client">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <Field label="Company / building name *" error={errors.name?.message}>
+            <input {...register('name')} placeholder="Acme HQ" className={inputClass} />
+          </Field>
+          <Field label="Address *" error={errors.address?.message}>
+            <input {...register('address')} placeholder="123 Main St" className={inputClass} />
+          </Field>
+          <Field label="Contact name *" error={errors.contactName?.message}>
+            <input {...register('contactName')} placeholder="John Doe" className={inputClass} />
+          </Field>
+          <Field label="Contact email *" error={errors.contactEmail?.message}>
+            <input
+              {...register('contactEmail')}
+              type="email"
+              placeholder="john@acme.com"
+              className={inputClass}
+            />
+          </Field>
           <Field label="Notes" error={errors.notes?.message}>
             <textarea
               {...register('notes')}
@@ -103,12 +102,13 @@ export default function ClientsPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200 disabled:opacity-50"
+            className="w-full rounded-lg bg-gray-900 dark:bg-gray-100 py-2.5 text-sm font-bold uppercase tracking-widest text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200 disabled:opacity-50 transition-colors"
+            style={{ fontFamily: 'IBM Plex Mono, monospace' }}
           >
-            {isSubmitting ? 'Saving…' : 'Save client'}
+            {isSubmitting ? 'Saving…' : 'Save Client'}
           </button>
         </form>
-      )}
+      </Modal>
 
       {isLoading ? (
         <div className="text-sm text-gray-500 dark:text-gray-400">Loading…</div>
