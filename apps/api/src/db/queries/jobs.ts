@@ -66,7 +66,7 @@ export async function getJobDetail(id: string, companyId: string): Promise<JobDe
       supabase.from('checklists').select('name').eq('id', jobRow['checklist_id']).single(),
       supabase
         .from('job_crew')
-        .select('profiles(id, full_name, role, avatar_url)')
+        .select('profiles(id, full_name, role, avatar_url, pay_type, pay_rate_cents)')
         .eq('job_id', jobId),
       supabase
         .from('job_checklist_items')
@@ -84,6 +84,8 @@ export async function getJobDetail(id: string, companyId: string): Promise<JobDe
       fullName: p['full_name'] as string,
       role: p['role'] as string,
       avatarUrl: (p['avatar_url'] as string | null) ?? null,
+      payType: (p['pay_type'] as 'hourly' | 'per_job' | null) ?? null,
+      payRateCents: (p['pay_rate_cents'] as number | null) ?? null,
     }
   })
 

@@ -11,6 +11,7 @@ const navItems = [
   { to: '/owner/clients', label: 'Clients' },
   { to: '/owner/crew', label: 'Crew' },
   { to: '/owner/invoices', label: 'Invoices' },
+  { to: '/owner/finance', label: 'Finance' },
 ]
 
 function OwnerLayoutInner() {

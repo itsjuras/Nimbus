@@ -19,6 +19,7 @@ const ClientDetailPage = lazy(() => import('./pages/owner/ClientDetailPage'))
 const CrewPage = lazy(() => import('./pages/owner/CrewPage'))
 const CrewDetailPage = lazy(() => import('./pages/owner/CrewDetailPage'))
 const InvoicesPage = lazy(() => import('./pages/owner/InvoicesPage'))
+const FinancePage = lazy(() => import('./pages/owner/FinancePage'))
 const OwnerCalendarPage = lazy(() => import('./pages/owner/CalendarPage'))
 
 // Crew pages
@@ -62,6 +63,7 @@ export default function App() {
             <Route path="/owner/crew" element={<CrewPage />} />
             <Route path="/owner/crew/:id" element={<CrewDetailPage />} />
             <Route path="/owner/invoices" element={<InvoicesPage />} />
+            <Route path="/owner/finance" element={<FinancePage />} />
             <Route path="/owner/calendar" element={<OwnerCalendarPage />} />
           </Route>
         </Route>

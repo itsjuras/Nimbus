@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { UpdateJobSchema, type UpdateJobRequest, type JobStatus } from '@nimbus/shared'
 import { useJob, useUpdateJob, useDeleteJob } from '../../hooks/useJobs'
 import { useCrewMembers } from '../../hooks/useCrew'
+import { useJobWages, useLogHoursForJob } from '../../hooks/useWages'
 import { useTheme } from '../../hooks/useTheme'
 
 const STATUS_BADGE: Record<JobStatus, string> = {
@@ -23,6 +24,8 @@ export default function JobDetailPage() {
 
   const { data: job, isLoading } = useJob(id)
   const { data: allCrew } = useCrewMembers()
+  const { data: jobWages = [] } = useJobWages(id)
+  const logHours = useLogHoursForJob(id)
   const updateJob = useUpdateJob(id)
   const deleteJob = useDeleteJob()
 
@@ -215,6 +218,28 @@ export default function JobDetailPage() {
         </div>
       </div>
 
+      {job.status === 'completed' && job.crew.some((m) => m.payType != null) && (
+        <div className="mt-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+          <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Wages</h2>
+          <div className="space-y-4">
+            {job.crew
+              .filter((m) => m.payType != null)
+              .map((member) => {
+                const existingEntry = jobWages.find((w) => w.profileId === member.id)
+                return (
+                  <WageMemberRow
+                    key={member.id}
+                    member={member}
+                    existingEntry={existingEntry}
+                    onLogHours={(hours) => logHours.mutate({ profileId: member.id, hours })}
+                    isPending={logHours.isPending}
+                  />
+                )
+              })}
+          </div>
+        </div>
+      )}
+
       {job.checklistItems.length > 0 && (
         <div className="mt-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
           <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">
@@ -259,6 +284,88 @@ export default function JobDetailPage() {
 
 const inputClass =
   'w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm normal-case tracking-normal text-gray-900 dark:text-gray-100 outline-none transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:border-gray-400 dark:focus:border-gray-500 focus:ring-2 focus:ring-gray-100 dark:focus:ring-gray-800 disabled:bg-gray-50 dark:disabled:bg-gray-800/50 disabled:text-gray-400 dark:disabled:text-gray-500'
+
+function formatMoney(cents: number) {
+  return '$' + (cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+function WageMemberRow({
+  member,
+  existingEntry,
+  onLogHours,
+  isPending,
+}: {
+  member: { id: string; fullName: string; payType: 'hourly' | 'per_job' | null; payRateCents: number | null }
+  existingEntry: import('@nimbus/shared').WageEntry | undefined
+  onLogHours: (hours: number) => void
+  isPending: boolean
+}) {
+  const [hoursStr, setHoursStr] = useState('')
+
+  if (member.payType === 'per_job') {
+    return (
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 normal-case tracking-normal">{member.fullName}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'IBM Plex Mono, monospace' }}>Per job</p>
+        </div>
+        {existingEntry ? (
+          <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 normal-case tracking-normal">
+            {formatMoney(existingEntry.totalCents)} <span className="text-xs font-normal text-gray-400 dark:text-gray-500">auto-logged</span>
+          </span>
+        ) : (
+          <span className="text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal">
+            {member.payRateCents ? `${formatMoney(member.payRateCents)} — not yet logged` : 'No rate set'}
+          </span>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 normal-case tracking-normal">{member.fullName}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'IBM Plex Mono, monospace' }}>
+          Hourly · {member.payRateCents ? `${formatMoney(member.payRateCents)}/hr` : 'No rate set'}
+        </p>
+      </div>
+      {existingEntry ? (
+        <div className="text-right">
+          <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 normal-case tracking-normal">
+            {formatMoney(existingEntry.totalCents)}
+          </p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal">{existingEntry.hours} hrs</p>
+        </div>
+      ) : member.payRateCents ? (
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            step="0.5"
+            min="0.5"
+            value={hoursStr}
+            onChange={(e) => setHoursStr(e.target.value)}
+            placeholder="hrs"
+            className="w-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-center text-gray-900 dark:text-gray-100 outline-none focus:border-gray-400 dark:focus:border-gray-500"
+          />
+          <button
+            disabled={isPending || !hoursStr || parseFloat(hoursStr) <= 0}
+            onClick={() => {
+              const h = parseFloat(hoursStr)
+              if (h > 0) { onLogHours(h); setHoursStr('') }
+            }}
+            className="rounded-lg bg-gray-900 dark:bg-gray-100 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200 disabled:opacity-40"
+            style={{ fontFamily: 'IBM Plex Mono, monospace' }}
+          >
+            Log
+          </button>
+        </div>
+      ) : (
+        <span className="text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal">No rate set</span>
+      )}
+    </div>
+  )
+}
 
 function SunIcon() {
   return (

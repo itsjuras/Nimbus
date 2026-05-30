@@ -1,10 +1,11 @@
 import { supabase } from '../db/supabase.js'
-import { getJobById, updateJobStatus } from '../db/queries/jobs.js'
+import { getJobById, updateJobStatus, getJobDetail } from '../db/queries/jobs.js'
 import {
   markChecklistItemComplete,
   insertJobPhoto,
   getChecklistCompletionStatus,
 } from '../db/queries/jobChecklist.js'
+import { createWageEntryRecord } from '../db/queries/wages.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { sendCompletionReport } from './reportService.js'
 import { notifyOwnersJobStatusChanged } from '../lib/push.js'
@@ -75,6 +76,27 @@ export async function completeJob(
     job_id: jobId,
     completed_by: profileId,
   })
+
+  // Auto-create wage entries for per-job crew members
+  const detail = await getJobDetail(jobId, companyId).catch(() => null)
+  if (detail) {
+    const today = new Date().toISOString().split('T')[0]!
+    await Promise.allSettled(
+      detail.crew
+        .filter((m) => m.payType === 'per_job' && m.payRateCents != null && m.payRateCents > 0)
+        .map((m) =>
+          createWageEntryRecord({
+            companyId,
+            profileId: m.id,
+            payType: 'per_job',
+            rateCents: m.payRateCents!,
+            totalCents: m.payRateCents!,
+            periodDate: today,
+            jobId,
+          }),
+        ),
+    )
+  }
 
   // Send client report and owner notification asynchronously
   sendCompletionReport(jobId, companyId).catch((err) => {

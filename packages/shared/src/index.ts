@@ -15,6 +15,10 @@ export type { CreateInvoiceRequest, InvoiceLineItemInput } from './schemas/invoi
 
 export type { Invoice, InvoiceLineItem, InvoiceStatus } from './types/invoice.js'
 
+export { CreateExpenseSchema, UpdateExpenseStatusSchema, LogWageSchema, UpdatePayRateSchema, FinancePeriodSchema } from './schemas/finance.js'
+export type { CreateExpenseRequest, UpdateExpenseStatusRequest, LogWageRequest, UpdatePayRateRequest, FinancePeriodRequest } from './schemas/finance.js'
+export type { Expense, WageEntry, FinanceSummary, ExpenseCategory, ExpenseStatus, PayType } from './types/finance.js'
+
 export type { Company } from './types/company.js'
 export type { UserRole, Profile } from './types/profile.js'
 export type { Client } from './types/client.js'

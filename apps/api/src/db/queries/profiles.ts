@@ -9,6 +9,8 @@ function toProfile(row: Record<string, unknown>): Profile {
     fullName: row['full_name'] as string,
     phone: (row['phone'] as string | null) ?? null,
     avatarUrl: (row['avatar_url'] as string | null) ?? null,
+    payType: (row['pay_type'] as 'hourly' | 'per_job' | null) ?? null,
+    payRateCents: (row['pay_rate_cents'] as number | null) ?? null,
     createdAt: row['created_at'] as string,
   }
 }
