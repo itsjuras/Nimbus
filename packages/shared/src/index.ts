@@ -15,11 +15,16 @@ export type { CreateInvoiceRequest, InvoiceLineItemInput } from './schemas/invoi
 
 export type { Invoice, InvoiceLineItem, InvoiceStatus } from './types/invoice.js'
 
+export { GenerateEmailDraftSchema, SendEmailSchema } from './schemas/emails.js'
+export type { GenerateEmailDraftRequest, SendEmailRequest, EmailDraft } from './schemas/emails.js'
+
 export { CreateExpenseSchema, UpdateExpenseStatusSchema, LogWageSchema, UpdatePayRateSchema, FinancePeriodSchema } from './schemas/finance.js'
 export type { CreateExpenseRequest, UpdateExpenseStatusRequest, LogWageRequest, UpdatePayRateRequest, FinancePeriodRequest } from './schemas/finance.js'
 export type { Expense, WageEntry, FinanceSummary, ExpenseCategory, ExpenseStatus, PayType } from './types/finance.js'
 
-export type { Company } from './types/company.js'
+export type { Company, CompanySettings } from './types/company.js'
+export { UpdateCompanySettingsSchema } from './schemas/company.js'
+export type { UpdateCompanySettingsRequest } from './schemas/company.js'
 export type { UserRole, Profile } from './types/profile.js'
 export type { Client } from './types/client.js'
 export type { Checklist, ChecklistItem } from './types/checklist.js'

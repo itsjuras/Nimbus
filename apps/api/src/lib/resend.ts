@@ -5,4 +5,4 @@ if (!apiKey) throw new Error('Missing RESEND_API_KEY')
 
 export const resend = new Resend(apiKey)
 
-export const fromEmail = process.env['REPORT_FROM_EMAIL'] ?? 'onboarding@resend.dev'
+export const platformFromEmail = process.env['PLATFORM_FROM_EMAIL'] ?? 'hello@mail.nimbusapp.com'

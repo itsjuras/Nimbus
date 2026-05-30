@@ -4,3 +4,10 @@ export interface Company {
   ownerId: string
   createdAt: string
 }
+
+export interface CompanySettings {
+  id: string
+  name: string
+  companyName: string | null
+  replyToEmail: string | null
+}

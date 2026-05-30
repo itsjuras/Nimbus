@@ -8,6 +8,8 @@ import { invoicesRouter } from './routes/invoices.js'
 import { expensesRouter } from './routes/expenses.js'
 import { wagesRouter } from './routes/wages.js'
 import { financeRouter } from './routes/finance.js'
+import { emailsRouter } from './routes/emails.js'
+import { companyRouter } from './routes/company.js'
 import { mobileRouter } from './routes/mobile.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
@@ -36,10 +38,12 @@ app.use('/api/v1', authRouter)
 app.use('/api/v1/clients', clientsRouter)
 app.use('/api/v1/checklists', checklistsRouter)
 app.use('/api/v1/jobs', jobsRouter)
-app.use('/api/v1', invoicesRouter)
+app.use('/api/v1/emails', emailsRouter)
+app.use('/api/v1/company', companyRouter)
 app.use('/api/v1/expenses', expensesRouter)
 app.use('/api/v1/wages', wagesRouter)
 app.use('/api/v1/finance', financeRouter)
+app.use('/api/v1', invoicesRouter)
 app.use('/api/v1', mobileRouter)
 
 app.use(errorHandler)

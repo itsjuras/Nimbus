@@ -1,4 +1,4 @@
-import { resend, fromEmail } from '../lib/resend.js'
+import { resend, platformFromEmail as fromEmail } from '../lib/resend.js'
 import { getJobDetail } from '../db/queries/jobs.js'
 import { supabase } from '../db/supabase.js'
 import type { JobChecklistItemDetail } from '@nimbus/shared'

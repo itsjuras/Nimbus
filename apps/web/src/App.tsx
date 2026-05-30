@@ -20,7 +20,9 @@ const CrewPage = lazy(() => import('./pages/owner/CrewPage'))
 const CrewDetailPage = lazy(() => import('./pages/owner/CrewDetailPage'))
 const InvoicesPage = lazy(() => import('./pages/owner/InvoicesPage'))
 const FinancePage = lazy(() => import('./pages/owner/FinancePage'))
+const EmailsPage = lazy(() => import('./pages/owner/EmailsPage'))
 const OwnerCalendarPage = lazy(() => import('./pages/owner/CalendarPage'))
+const SettingsPage = lazy(() => import('./pages/owner/SettingsPage'))
 
 // Crew pages
 const CrewJobsPage = lazy(() => import('./pages/crew/JobsPage'))
@@ -64,7 +66,9 @@ export default function App() {
             <Route path="/owner/crew/:id" element={<CrewDetailPage />} />
             <Route path="/owner/invoices" element={<InvoicesPage />} />
             <Route path="/owner/finance" element={<FinancePage />} />
+            <Route path="/owner/emails" element={<EmailsPage />} />
             <Route path="/owner/calendar" element={<OwnerCalendarPage />} />
+            <Route path="/owner/settings" element={<SettingsPage />} />
           </Route>
         </Route>
 

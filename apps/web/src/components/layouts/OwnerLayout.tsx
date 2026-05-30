@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { SidebarProvider, useSidebar } from '../../contexts/SidebarContext'
 import NimbusSymbolLogo from '../../assets/NimbusSymbolLogo.png'
@@ -12,11 +12,13 @@ const navItems = [
   { to: '/owner/crew', label: 'Crew' },
   { to: '/owner/invoices', label: 'Invoices' },
   { to: '/owner/finance', label: 'Finance' },
+  { to: '/owner/emails', label: 'Emails' },
 ]
 
 function OwnerLayoutInner() {
   const { profile, signOut } = useAuth()
   const { sidebarOpen, toggleSidebar } = useSidebar()
+  const navigate = useNavigate()
 
   const closeOnMobile = () => {
     if (window.innerWidth < 768) toggleSidebar()
@@ -83,13 +85,22 @@ function OwnerLayoutInner() {
         </nav>
 
         <div className="border-t border-gray-200 dark:border-gray-800 p-4">
-          <p className="truncate text-sm font-medium text-gray-700 dark:text-gray-300">{profile?.fullName}</p>
-          <button
-            onClick={signOut}
-            className="mt-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-          >
-            Sign out
-          </button>
+          <p className="mb-2 truncate text-sm font-medium text-gray-700 dark:text-gray-300">{profile?.fullName}</p>
+          <div className="flex items-center justify-between gap-2">
+            <button
+              onClick={signOut}
+              className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              Sign out
+            </button>
+            <button
+              onClick={() => { navigate('/owner/settings'); closeOnMobile() }}
+              aria-label="Settings"
+              className="shrink-0 rounded-md p-1 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            >
+              <GearIcon />
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -97,6 +108,15 @@ function OwnerLayoutInner() {
         <Outlet />
       </main>
     </div>
+  )
+}
+
+function GearIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
   )
 }
 
