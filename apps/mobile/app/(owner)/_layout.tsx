@@ -62,6 +62,14 @@ export default function OwnerLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="finance"
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'bar-chart' : 'bar-chart-outline'} size={26} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   )
 }
