@@ -70,6 +70,14 @@ export default function OwnerLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="emails"
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'mail' : 'mail-outline'} size={26} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   )
 }
