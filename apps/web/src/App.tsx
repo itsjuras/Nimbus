@@ -38,6 +38,8 @@ const DemoCrewPage = lazy(() => import('./pages/demo/CrewPage'))
 const DemoCrewDetailPage = lazy(() => import('./pages/demo/CrewDetailPage'))
 const DemoInvoicesPage = lazy(() => import('./pages/demo/InvoicesPage'))
 const DemoCalendarPage = lazy(() => import('./pages/demo/CalendarPage'))
+const DemoFinancePage = lazy(() => import('./pages/demo/FinancePage'))
+const DemoEmailsPage = lazy(() => import('./pages/demo/EmailsPage'))
 
 const Spinner = () => (
   <div className="flex h-screen items-center justify-center">
@@ -91,6 +93,8 @@ export default function App() {
           <Route path="/demo/crew/:id" element={<DemoCrewDetailPage />} />
           <Route path="/demo/invoices" element={<DemoInvoicesPage />} />
           <Route path="/demo/calendar" element={<DemoCalendarPage />} />
+          <Route path="/demo/finance" element={<DemoFinancePage />} />
+          <Route path="/demo/emails" element={<DemoEmailsPage />} />
         </Route>
 
         {/* Landing */}

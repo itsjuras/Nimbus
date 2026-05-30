@@ -11,6 +11,8 @@ const NAV = [
   { to: '/demo/clients', label: 'Clients', end: false },
   { to: '/demo/crew', label: 'Crew', end: false },
   { to: '/demo/invoices', label: 'Invoices', end: false },
+  { to: '/demo/finance', label: 'Finance', end: false },
+  { to: '/demo/emails', label: 'Emails', end: false },
 ]
 
 function DemoLayoutInner() {
