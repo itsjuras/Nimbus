@@ -75,7 +75,7 @@ export default function LandingPage() {
               Sign in
             </Link>
             <Link
-              to="/signup"
+              to="/book"
               className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
             >
               Get started
@@ -134,7 +134,7 @@ export default function LandingPage() {
                 Sign in
               </Link>
               <Link
-                to="/signup"
+                to="/book"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block rounded-lg bg-gray-900 px-3 py-2.5 text-center text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
               >
@@ -180,7 +180,7 @@ export default function LandingPage() {
 
         <div className="mt-16 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
-            to="/signup"
+            to="/book"
             className="rounded-lg border border-gray-900 bg-gray-900/90 px-10 py-4 text-xs font-bold tracking-widest text-white transition-all hover:bg-gray-900 dark:border-white dark:bg-white/90 dark:text-gray-900 dark:hover:bg-white"
           >
             Start for free
@@ -412,7 +412,7 @@ export default function LandingPage() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              to="/signup"
+              to="/book"
               className="rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
             >
               Get started for free
@@ -436,7 +436,7 @@ export default function LandingPage() {
           </p>
           <div className="flex gap-6 text-xs text-gray-500">
             <Link to="/login" className="transition-colors hover:text-gray-900 dark:hover:text-gray-100">Sign in</Link>
-            <Link to="/signup" className="transition-colors hover:text-gray-900 dark:hover:text-gray-100">Sign up</Link>
+            <Link to="/book" className="transition-colors hover:text-gray-900 dark:hover:text-gray-100">Book a call</Link>
             <a href="mailto:support@nimbus.app" className="transition-colors hover:text-gray-900 dark:hover:text-gray-100">Contact</a>
           </div>
         </div>

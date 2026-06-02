@@ -8,6 +8,7 @@ import { DemoLayout } from './components/layouts/DemoLayout'
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const SignUpPage = lazy(() => import('./pages/SignUpPage'))
+const BookPage = lazy(() => import('./pages/BookPage'))
 const AcceptInvitePage = lazy(() => import('./pages/AcceptInvitePage'))
 
 // Owner pages
@@ -54,6 +55,7 @@ export default function App() {
         {/* Public */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/book" element={<BookPage />} />
         <Route path="/accept-invite" element={<AcceptInvitePage />} />
 
         {/* Owner routes */}
