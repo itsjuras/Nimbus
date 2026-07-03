@@ -3,10 +3,12 @@ import type { Job, JobDetail, JobStatus } from '@nimbus/shared'
 import type { JobFilters } from '@nimbus/shared'
 
 function toJob(row: Record<string, unknown>): Job {
+  const clientData = row['clients'] as { name: string } | null | undefined
   return {
     id: row['id'] as string,
     companyId: row['company_id'] as string,
     clientId: row['client_id'] as string,
+    ...(clientData ? { clientName: clientData.name } : {}),
     checklistId: row['checklist_id'] as string,
     scheduledAt: row['scheduled_at'] as string,
     status: row['status'] as JobStatus,
@@ -21,7 +23,7 @@ export async function getJobsByCompany(
 ): Promise<Job[]> {
   let query = supabase
     .from('jobs')
-    .select('*')
+    .select('*, clients!client_id(name)')
     .eq('company_id', companyId)
     .order('scheduled_at', { ascending: true })
 
@@ -32,6 +34,25 @@ export async function getJobsByCompany(
   const { data, error } = await query
   if (error) throw error
   return (data as Record<string, unknown>[]).map(toJob)
+}
+
+export async function getJobsByProfile(
+  profileId: string,
+  companyId: string,
+): Promise<Job[]> {
+  const { data, error } = await supabase
+    .from('job_crew')
+    .select('jobs(*, clients!client_id(name))')
+    .eq('profile_id', profileId)
+    .eq('jobs.company_id', companyId)
+    .order('jobs(scheduled_at)', { ascending: false })
+
+  if (error) throw error
+
+  return (data as Record<string, unknown>[])
+    .map((row) => row['jobs'] as Record<string, unknown> | null)
+    .filter((j): j is Record<string, unknown> => j !== null)
+    .map(toJob)
 }
 
 export async function getJobById(id: string, companyId: string): Promise<Job | null> {

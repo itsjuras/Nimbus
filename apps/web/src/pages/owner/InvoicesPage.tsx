@@ -1,11 +1,26 @@
 import { useState } from 'react'
+import { z } from 'zod'
 import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CreateInvoiceSchema, type CreateInvoiceRequest, type InvoiceStatus } from '@nimbus/shared'
+import { type InvoiceStatus } from '@nimbus/shared'
 import { useInvoices, useCreateInvoice, useSendInvoice } from '../../hooks/useInvoices'
 import { useClients } from '../../hooks/useClients'
 import { useTheme } from '../../hooks/useTheme'
+
+// Local form type uses dollar amounts; we convert to cents on submit
+const InvoiceFormSchema = z.object({
+  clientId: z.string().uuid('Select a client'),
+  jobId: z.string().uuid().optional(),
+  dueDate: z.string().optional(),
+  currency: z.string().length(3).default('usd'),
+  lineItems: z.array(z.object({
+    description: z.string().min(1, 'Description is required'),
+    quantity: z.number().int().positive('Must be at least 1'),
+    unitAmountDollars: z.number().positive('Must be greater than 0'),
+  })).min(1, 'Add at least one line item'),
+})
+type InvoiceFormValues = z.infer<typeof InvoiceFormSchema>
 
 const STATUS_BADGE: Record<InvoiceStatus, string> = {
   draft: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
@@ -35,15 +50,25 @@ export default function InvoicesPage() {
     control,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateInvoiceRequest>({
-    resolver: zodResolver(CreateInvoiceSchema),
-    defaultValues: { currency: 'usd', lineItems: [{ description: '', quantity: 1, unitAmountCents: 0 }] },
+  } = useForm<InvoiceFormValues>({
+    resolver: zodResolver(InvoiceFormSchema),
+    defaultValues: { currency: 'usd', lineItems: [{ description: '', quantity: 1, unitAmountDollars: 0 }] },
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'lineItems' })
 
-  async function onSubmit(data: CreateInvoiceRequest) {
-    await createInvoice.mutateAsync(data)
+  async function onSubmit(data: InvoiceFormValues) {
+    await createInvoice.mutateAsync({
+      clientId: data.clientId,
+      ...(data.jobId ? { jobId: data.jobId } : {}),
+      ...(data.dueDate ? { dueDate: data.dueDate } : {}),
+      currency: data.currency,
+      lineItems: data.lineItems.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitAmountCents: Math.round(item.unitAmountDollars * 100),
+      })),
+    })
     reset()
     setShowForm(false)
   }
@@ -131,10 +156,11 @@ export default function InvoicesPage() {
                     className={`${inputClass} w-20`}
                   />
                   <input
-                    {...register(`lineItems.${index}.unitAmountCents`, { valueAsNumber: true })}
+                    {...register(`lineItems.${index}.unitAmountDollars`, { valueAsNumber: true })}
                     type="number"
-                    min="1"
-                    placeholder="Amount (cents)"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="Price ($)"
                     className={`${inputClass} w-36`}
                   />
                   <button
@@ -150,16 +176,12 @@ export default function InvoicesPage() {
             </div>
             <button
               type="button"
-              onClick={() => append({ description: '', quantity: 1, unitAmountCents: 0 })}
+              onClick={() => append({ description: '', quantity: 1, unitAmountDollars: 0 })}
               className="mt-3 text-sm font-medium text-gray-900 dark:text-gray-100 hover:underline normal-case tracking-normal"
             >
               + Add line item
             </button>
           </div>
-
-          <p className="mt-3 text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal">
-            Enter amounts in cents — e.g. $150.00 = 15000
-          </p>
 
           {createInvoice.error && (
             <p className="mt-3 text-sm text-gray-700 dark:text-gray-300 normal-case tracking-normal">

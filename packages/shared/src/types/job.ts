@@ -4,6 +4,7 @@ export interface Job {
   id: string
   companyId: string
   clientId: string
+  clientName?: string
   checklistId: string
   scheduledAt: string
   status: JobStatus

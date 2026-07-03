@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { UpdatePayRateSchema, type UpdatePayRateRequest, type UserRole, type JobStatus } from '@nimbus/shared'
 import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { useTheme } from '../../hooks/useTheme'
-import { useCrewMembers } from '../../hooks/useCrew'
-import type { UserRole } from '@nimbus/shared'
+import { useCrewMembers, useCrewMemberJobs, useUpdateCrewMember } from '../../hooks/useCrew'
 
 const ROLE_BADGE: Record<UserRole, string> = {
   owner: 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900',
@@ -10,12 +13,47 @@ const ROLE_BADGE: Record<UserRole, string> = {
   crew: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
 }
 
+const STATUS_BADGE: Record<JobStatus, string> = {
+  scheduled: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
+  in_progress: 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900',
+  completed: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
+  missed: 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500',
+}
+
+const inputClass =
+  'w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm normal-case tracking-normal text-gray-900 dark:text-gray-100 outline-none transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:border-gray-400 dark:focus:border-gray-500 focus:ring-2 focus:ring-gray-100 dark:focus:ring-gray-800'
+
+function formatCents(cents: number) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
+}
+
 export default function CrewDetailPage() {
   const { id = '' } = useParams<{ id: string }>()
   const { theme, toggle } = useTheme()
   const { data: crew, isLoading } = useCrewMembers()
+  const { data: jobs, isLoading: jobsLoading } = useCrewMemberJobs(id)
+  const updateMember = useUpdateCrewMember(id)
+  const [editingPay, setEditingPay] = useState(false)
 
   const member = crew?.find((m) => m.id === id)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<UpdatePayRateRequest>({
+    resolver: zodResolver(UpdatePayRateSchema),
+    values: {
+      payType: (member?.payType ?? 'hourly') as 'hourly' | 'per_job',
+      payRateCents: member?.payRateCents ?? 0,
+    },
+  })
+
+  async function onSavePay(data: UpdatePayRateRequest) {
+    await updateMember.mutateAsync(data)
+    setEditingPay(false)
+  }
 
   if (isLoading) {
     return (
@@ -35,6 +73,9 @@ export default function CrewDetailPage() {
       </div>
     )
   }
+
+  const completedJobs = jobs?.filter((j) => j.status === 'completed') ?? []
+  const activeJobs = jobs?.filter((j) => j.status === 'in_progress' || j.status === 'scheduled') ?? []
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -66,34 +107,176 @@ export default function CrewDetailPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="self-start space-y-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 lg:order-last">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-xl font-semibold text-gray-700 dark:text-gray-300">
-              {member.fullName.charAt(0).toUpperCase()}
+        {/* Sidebar: profile card + pay settings */}
+        <div className="space-y-4 lg:order-last">
+          {/* Profile card */}
+          <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-xl font-semibold text-gray-700 dark:text-gray-300">
+                {member.fullName.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-gray-100 normal-case tracking-normal">{member.fullName}</p>
+                <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium uppercase ${ROLE_BADGE[member.role]}`}>
+                  {member.role}
+                </span>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold text-gray-900 dark:text-gray-100 normal-case tracking-normal">{member.fullName}</p>
-              <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium uppercase ${ROLE_BADGE[member.role]}`}>
-                {member.role}
-              </span>
+
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              <div className="py-3">
+                <p className="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">Phone</p>
+                <p className="mt-0.5 text-sm text-gray-700 dark:text-gray-300 normal-case tracking-normal">{member.phone ?? '—'}</p>
+              </div>
+              <div className="py-3">
+                <p className="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">Jobs completed</p>
+                <p className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-gray-100">{completedJobs.length}</p>
+              </div>
+              <div className="py-3">
+                <p className="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">Active jobs</p>
+                <p className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-gray-100">{activeJobs.length}</p>
+              </div>
             </div>
           </div>
 
-          <div className="divide-y divide-gray-100 dark:divide-gray-800 pt-2">
-            <div className="py-3">
-              <p className="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">Phone</p>
-              <p className="mt-0.5 text-sm text-gray-700 dark:text-gray-300 normal-case tracking-normal">{member.phone ?? '—'}</p>
+          {/* Pay settings */}
+          <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Pay settings</h2>
+              {!editingPay && (
+                <button
+                  onClick={() => setEditingPay(true)}
+                  className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                >
+                  Edit
+                </button>
+              )}
             </div>
+
+            {editingPay ? (
+              <form onSubmit={handleSubmit(onSavePay)} className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Pay type</label>
+                  <select {...register('payType')} className={inputClass}>
+                    <option value="hourly">Hourly</option>
+                    <option value="per_job">Per job</option>
+                  </select>
+                  {errors.payType && (
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 normal-case tracking-normal">{errors.payType.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
+                    Rate ($ per hour / per job)
+                  </label>
+                  <input
+                    {...register('payRateCents', {
+                      setValueAs: (v) => Math.round(parseFloat(v) * 100),
+                    })}
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    defaultValue={member.payRateCents ? (member.payRateCents / 100).toFixed(2) : ''}
+                    className={inputClass}
+                  />
+                  {errors.payRateCents && (
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 normal-case tracking-normal">{errors.payRateCents.message}</p>
+                  )}
+                </div>
+
+                {updateMember.error && (
+                  <p className="text-xs text-gray-600 dark:text-gray-400 normal-case tracking-normal">
+                    {updateMember.error instanceof Error ? updateMember.error.message : 'Failed to save'}
+                  </p>
+                )}
+
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="rounded-lg bg-gray-900 dark:bg-gray-100 px-3 py-1.5 text-xs font-semibold uppercase text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200 disabled:opacity-50"
+                  >
+                    {isSubmitting ? 'Saving…' : 'Save'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { reset(); setEditingPay(false) }}
+                    className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold uppercase text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                <div className="py-3">
+                  <p className="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">Pay type</p>
+                  <p className="mt-0.5 text-sm text-gray-700 dark:text-gray-300 normal-case tracking-normal capitalize">
+                    {member.payType ? member.payType.replace('_', ' ') : 'Not set'}
+                  </p>
+                </div>
+                <div className="py-3">
+                  <p className="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">Rate</p>
+                  <p className="mt-0.5 text-sm text-gray-700 dark:text-gray-300 normal-case tracking-normal">
+                    {member.payRateCents ? formatCents(member.payRateCents) : 'Not set'}
+                    {member.payType === 'hourly' && member.payRateCents ? '/hr' : ''}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
+        {/* Main panel: job history */}
         <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 lg:col-span-2">
           <div className="border-b border-gray-200 dark:border-gray-800 px-6 py-4">
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Job history</h2>
           </div>
-          <p className="p-8 text-center text-sm text-gray-400 dark:text-gray-500 normal-case tracking-normal">
-            Job history per crew member coming soon.
-          </p>
+
+          {jobsLoading ? (
+            <div className="flex h-40 items-center justify-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-4 border-gray-900 dark:border-gray-100 border-t-transparent" />
+            </div>
+          ) : !jobs || jobs.length === 0 ? (
+            <p className="p-8 text-center text-sm text-gray-400 dark:text-gray-500 normal-case tracking-normal">
+              No jobs assigned yet.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                  <tr>
+                    <th className="px-6 py-3">Client</th>
+                    <th className="px-6 py-3">Date</th>
+                    <th className="px-6 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {jobs.map((job) => (
+                    <tr key={job.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100 normal-case tracking-normal">
+                        {job.clientName ?? '—'}
+                      </td>
+                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400 normal-case tracking-normal">
+                        {new Date(job.scheduledAt).toLocaleDateString([], {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium uppercase ${STATUS_BADGE[job.status]}`}>
+                          {job.status.replace('_', ' ')}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>

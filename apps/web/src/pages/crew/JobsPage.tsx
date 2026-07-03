@@ -29,7 +29,7 @@ function JobCard({ job }: { job: Job }) {
       className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 active:bg-gray-50"
     >
       <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold text-gray-900">{job.clientId}</p>
+        <p className="truncate font-semibold text-gray-900">{job.clientName ?? '—'}</p>
         <p className="mt-0.5 text-sm text-gray-500">
           {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           {!isToday(job.scheduledAt) && ` · ${date.toLocaleDateString([], { month: 'short', day: 'numeric' })}`}

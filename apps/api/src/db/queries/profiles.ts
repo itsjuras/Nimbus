@@ -37,6 +37,28 @@ export async function getProfilesByCompany(companyId: string): Promise<Profile[]
   return (data as Record<string, unknown>[]).map(toProfile)
 }
 
+export async function updateProfile(
+  id: string,
+  companyId: string,
+  patch: { payType?: 'hourly' | 'per_job'; payRateCents?: number; phone?: string | null },
+): Promise<Profile | null> {
+  const update: Record<string, unknown> = {}
+  if (patch.payType !== undefined) update['pay_type'] = patch.payType
+  if (patch.payRateCents !== undefined) update['pay_rate_cents'] = patch.payRateCents
+  if (patch.phone !== undefined) update['phone'] = patch.phone
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(update)
+    .eq('id', id)
+    .eq('company_id', companyId)
+    .select()
+    .single()
+
+  if (error || !data) return null
+  return toProfile(data as Record<string, unknown>)
+}
+
 export async function createProfile(profile: {
   id: string
   companyId: string
