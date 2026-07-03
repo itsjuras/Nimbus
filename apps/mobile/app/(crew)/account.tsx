@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../hooks/useAuth'
 import { api } from '../../lib/api'
 import { ThemeToggle } from '../../components/ui/ThemeToggle'
+import { DirectDepositCard } from '../../components/account/DirectDepositCard'
 import { useTheme } from '../../contexts/ThemeContext'
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -220,6 +221,16 @@ export default function AccountScreen() {
             })}
             <View style={{ marginBottom: 16 }} />
           </>
+        )}
+
+        {/* Direct deposit */}
+        {profile != null && (
+          <DirectDepositCard
+            profileId={profile.id}
+            defaultHolderName={
+              profile.fullName ?? (profile as unknown as { full_name?: string }).full_name ?? ''
+            }
+          />
         )}
 
         {/* Sign out */}

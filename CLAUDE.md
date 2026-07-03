@@ -326,7 +326,7 @@ The core product is substantially complete and functional. Below is the current 
 - **Pay rate management** — Crew members have `pay_type` (hourly/per_job) and `pay_rate_cents`; per-job wages auto-logged on completion
 - **Payroll (Stripe Connect, Canadian rails)** — The platform Stripe account is Canadian, so payroll runs on CAD + pre-authorized debit (ACSS), not US ACH. Owner verifies business via Express onboarding (CA, card_payments + transfers) and saves a funding bank in Settings (transit/institution/account → SetupIntent + one-time microdeposit verification, mandate stored). Crew bank details + KYC (email, phone, DOB, address) entered in-app → CA Custom recipient account with transfers capability (only last4 stored). "Run Payroll" on Finance page creates an off-session PAD PaymentIntent using the stored mandate, then transfers each crew member's share via `source_transaction` once funding clears. Runs tracked in `payroll_runs`/`payroll_run_items`; wage entries link via `payroll_run_id` (NULL = unpaid). Webhook handles funding success/failure with a lazy-sync fallback on `GET /payroll/runs`. The full Stripe flow was verified end-to-end against the test-mode account (see scratchpad smoke tests, July 2026).
 - **Push notifications** — Expo push tokens, crew notified on job assignment, owner notified on status changes
-- **Mobile app** — Expo 52 / React Native with full feature parity: crew and owner flows, NativeWind styling
+- **Mobile app** — Expo 52 / React Native with full feature parity: crew and owner flows, NativeWind styling. Crew account screen includes weekly availability, time-off requests, and direct-deposit bank entry (self-service)
 - **Demo mode** — Full parallel `/demo/*` routes using hardcoded data (no auth required), useful for sales demos
 - **Company settings** — Company name and reply-to email
 
@@ -334,5 +334,7 @@ The core product is substantially complete and functional. Below is the current 
 
 - **SMTP custom sending** — Migration 009 added SMTP columns to `companies`; no API route or UI exposes them. Dead schema. Decide: implement or remove.
 - **Google OAuth / Gmail** — Migration 010 + `apps/api/src/lib/googleAuth.ts` exist with helpers; no route or UI uses them. Dead code.
-- **Crew time-off / availability** — DB tables and API routes exist (`apps/api/src/routes/mobile.ts`); unclear if mobile app surfaces these to users.
-- **Payroll follow-ups** — Crew bank entry not yet in the mobile app (owner enters it on web CrewDetailPage); Stripe webhook endpoint needs "listen to events on connected accounts" enabled for `account.updated` (the lazy sync in `GET /payroll/connect/status` covers it meanwhile); instant bank verification via Stripe.js Financial Connections modal could replace microdeposits later for better UX.
+- **Payroll follow-ups** — Stripe webhook endpoint needs "listen to events on connected accounts" enabled for `account.updated` (the lazy sync in `GET /payroll/connect/status` covers it meanwhile); instant bank verification via Stripe.js Financial Connections modal could replace microdeposits later for better UX.
+- **Mobile `useAuth` profile mapping** — `fetchProfile` casts the raw snake_case Supabase row to the camelCase `Profile` type, so fields like `fullName` are actually `full_name` at runtime. Callers work around it; worth fixing properly.
+
+(Resolved: crew time-off/availability IS surfaced in the mobile app — `app/(crew)/account.tsx` has weekly availability toggles and time-off requests. Crew bank entry is also in the mobile app now, same screen.)
