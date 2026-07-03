@@ -320,7 +320,8 @@ The core product is substantially complete and functional. Below is the current 
 - **Crew checklist execution** — Mobile-first: start job, tick items, photo capture (WebP, capped at 1920px), complete job
 - **Photo uploads** — Directly to Supabase Storage (`job-photos` bucket), path registered via API
 - **Completion reports** — Auto-sent to client email on job completion (Resend, signed photo URLs, styled HTML)
-- **AI email drafting** — Claude Haiku generates drafts; Resend delivers; reply-to from company settings
+- **AI email drafting** — Claude Haiku generates drafts (new emails and thread-aware replies); sent via connected Gmail when available, Resend fallback
+- **Gmail integration** — Owner connects Gmail via Google OAuth (`/api/v1/company/gmail/*`, tokens in `companies.google_email`/`google_refresh_token` from migration 010). Emails page has an Inbox tab: recent threads fetched live from the Gmail API (not stored), threads matched to clients by contact email, full thread view, in-app replies (proper In-Reply-To/References headers) with AI draft assist. New emails to clients send from the owner's real address via Gmail. Requires `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` env vars; unverified Google apps are capped at 100 users until Google app verification is done.
 - **Invoicing** — Stripe invoice creation, line items, send (emails client via Stripe), webhook syncs paid/void status
 - **Finance** — Expense tracking with approval flow, wage logging, per-period summary (revenue, costs, profit)
 - **Pay rate management** — Crew members have `pay_type` (hourly/per_job) and `pay_rate_cents`; per-job wages auto-logged on completion
@@ -332,8 +333,7 @@ The core product is substantially complete and functional. Below is the current 
 
 ### Known gaps / not yet implemented
 
-- **SMTP custom sending** — Migration 009 added SMTP columns to `companies`; no API route or UI exposes them. Dead schema. Decide: implement or remove.
-- **Google OAuth / Gmail** — Migration 010 + `apps/api/src/lib/googleAuth.ts` exist with helpers; no route or UI uses them. Dead code.
+- **Gmail follow-ups** — Google app verification needed before >100 connected users (restricted gmail scopes); OAuth state is stored in-memory (`googleAuth.ts` stateMap), so connects break if the API restarts mid-flow or runs multiple instances; Outlook/Microsoft 365 users have no equivalent (consider an aggregator like Nylas if demand appears). Migration 013 drops the never-used SMTP columns from 009.
 - **Payroll follow-ups** — Stripe webhook endpoint needs "listen to events on connected accounts" enabled for `account.updated` (the lazy sync in `GET /payroll/connect/status` covers it meanwhile); instant bank verification via Stripe.js Financial Connections modal could replace microdeposits later for better UX.
 - **Mobile `useAuth` profile mapping** — `fetchProfile` casts the raw snake_case Supabase row to the camelCase `Profile` type, so fields like `fullName` are actually `full_name` at runtime. Callers work around it; worth fixing properly.
 

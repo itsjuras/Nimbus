@@ -3,6 +3,7 @@ import { resend, platformFromEmail } from '../lib/resend.js'
 import { getClientById } from '../db/queries/clients.js'
 import { getProfilesByCompany } from '../db/queries/profiles.js'
 import { getCompanySettings } from '../db/queries/company.js'
+import { trySendViaGmail } from './gmailService.js'
 import { AppError } from '../middleware/errorHandler.js'
 import type { EmailDraft, GenerateEmailDraftRequest, SendEmailRequest } from '@nimbus/shared'
 
@@ -10,12 +11,20 @@ export async function generateDraft(
   companyId: string,
   input: GenerateEmailDraftRequest,
 ): Promise<EmailDraft> {
-  const client = await getClientById(input.clientId, companyId)
-  if (!client) throw new AppError('CLIENT_NOT_FOUND', 'No client found with that ID', 404)
+  let recipientLine = input.recipientName ? `Write an email to ${input.recipientName}.` : 'Write an email.'
+  if (input.clientId) {
+    const client = await getClientById(input.clientId, companyId)
+    if (!client) throw new AppError('CLIENT_NOT_FOUND', 'No client found with that ID', 404)
+    recipientLine = `Write an email to ${client.name} (contact: ${client.contactName ?? 'the team'}).`
+  }
 
   const profiles = await getProfilesByCompany(companyId)
   const owner = profiles.find((p) => p.role === 'owner') ?? profiles[0]
   const companyName = owner?.fullName ?? 'your cleaning company'
+
+  const threadContext = input.threadContext
+    ? `\n\nThis is a REPLY within an existing conversation. Recent messages, oldest first:\n---\n${input.threadContext}\n---\nWrite only the reply body; the subject should be a "Re:" of the conversation.`
+    : ''
 
   const message = await anthropic.messages.create({
     model: 'claude-haiku-4-5-20251001',
@@ -29,7 +38,7 @@ The body should use plain text with line breaks (\\n) for paragraphs. Do not use
     messages: [
       {
         role: 'user',
-        content: `Write an email to ${client.name} (contact: ${client.contactName ?? 'the team'}).
+        content: `${recipientLine}${threadContext}
 
 Instructions from the user: ${input.prompt}`,
       },
@@ -70,6 +79,11 @@ export async function sendEmail(
   if (!client.contactEmail) {
     throw new AppError('NO_EMAIL', 'This client has no contact email address', 400)
   }
+
+  // Prefer the owner's connected Gmail — sends from their real address
+  // and lands in their Gmail sent folder. Resend is the fallback.
+  const sentViaGmail = await trySendViaGmail(companyId, client.contactEmail, input.subject, input.body)
+  if (sentViaGmail) return
 
   const displayName = settings?.companyName ?? settings?.name ?? 'Nimbus'
   const from = `${displayName} <${platformFromEmail}>`

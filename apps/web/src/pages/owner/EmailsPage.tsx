@@ -1,12 +1,19 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { SidebarToggle } from '../../components/ui/SidebarToggle'
+import { InboxTab } from '../../components/emails/InboxTab'
 import { useClients } from '../../hooks/useClients'
-import { useGenerateDraft, useSendEmail } from '../../hooks/useEmails'
+import { useGenerateDraft, useSendEmail, useGmailStatus, useDisconnectGmail } from '../../hooks/useEmails'
 import { useTheme } from '../../hooks/useTheme'
 
 type Step = 'compose' | 'draft'
+type Tab = 'inbox' | 'compose'
 
 export default function EmailsPage() {
+  const [searchParams] = useSearchParams()
+  const [tab, setTab] = useState<Tab>(searchParams.get('gmail') ? 'inbox' : 'compose')
+  const { data: gmailStatus } = useGmailStatus()
+  const disconnectGmail = useDisconnectGmail()
   const [step, setStep] = useState<Step>('compose')
   const [clientId, setClientId] = useState('')
   const [showClientPicker, setShowClientPicker] = useState(false)
@@ -77,7 +84,51 @@ export default function EmailsPage() {
         </div>
       )}
 
-      <div className="mx-auto max-w-2xl">
+      {searchParams.get('gmail') === 'error' && (
+        <div className="mb-6 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 px-5 py-4">
+          <span className="text-sm text-red-600 dark:text-red-400 normal-case tracking-normal">
+            Gmail connection failed — please try again.
+          </span>
+        </div>
+      )}
+
+      {/* Tabs + Gmail account line */}
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-5 flex flex-wrap items-center gap-3">
+          <div className="flex gap-1 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-1">
+            {(['inbox', 'compose'] as Tab[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`rounded-lg px-5 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+                  tab === t
+                    ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
+                    : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+                style={{ fontFamily: 'IBM Plex Mono, monospace' }}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+          {gmailStatus?.connected && (
+            <p className="ml-auto text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal">
+              {gmailStatus.email}
+              <button
+                onClick={() => disconnectGmail.mutate()}
+                disabled={disconnectGmail.isPending}
+                className="ml-2 underline hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                Disconnect
+              </button>
+            </p>
+          )}
+        </div>
+
+        {tab === 'inbox' && <InboxTab gmailStatus={gmailStatus} />}
+      </div>
+
+      <div className={`mx-auto max-w-2xl ${tab !== 'compose' ? 'hidden' : ''}`}>
         {step === 'compose' ? (
           <ComposeStep
             clients={clients}

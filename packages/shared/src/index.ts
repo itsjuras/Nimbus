@@ -15,8 +15,17 @@ export type { CreateInvoiceRequest, InvoiceLineItemInput } from './schemas/invoi
 
 export type { Invoice, InvoiceLineItem, InvoiceStatus } from './types/invoice.js'
 
-export { GenerateEmailDraftSchema, SendEmailSchema } from './schemas/emails.js'
-export type { GenerateEmailDraftRequest, SendEmailRequest, EmailDraft } from './schemas/emails.js'
+export { GenerateEmailDraftSchema, SendEmailSchema, ReplyEmailSchema } from './schemas/emails.js'
+export type {
+  GenerateEmailDraftRequest,
+  SendEmailRequest,
+  ReplyEmailRequest,
+  EmailDraft,
+  GmailStatus,
+  InboxThread,
+  InboxMessage,
+  InboxThreadDetail,
+} from './schemas/emails.js'
 
 export { CreateExpenseSchema, UpdateExpenseStatusSchema, LogWageSchema, UpdatePayRateSchema, FinancePeriodSchema } from './schemas/finance.js'
 export type { CreateExpenseRequest, UpdateExpenseStatusRequest, LogWageRequest, UpdatePayRateRequest, FinancePeriodRequest } from './schemas/finance.js'

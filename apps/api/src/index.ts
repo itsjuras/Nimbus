@@ -11,6 +11,7 @@ import { financeRouter } from './routes/finance.js'
 import { payrollRouter } from './routes/payroll.js'
 import { emailsRouter } from './routes/emails.js'
 import { companyRouter } from './routes/company.js'
+import { gmailRouter } from './routes/gmail.js'
 import { mobileRouter } from './routes/mobile.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
@@ -40,6 +41,7 @@ app.use('/api/v1/clients', clientsRouter)
 app.use('/api/v1/checklists', checklistsRouter)
 app.use('/api/v1/jobs', jobsRouter)
 app.use('/api/v1/emails', emailsRouter)
+app.use('/api/v1/company/gmail', gmailRouter)
 app.use('/api/v1/company', companyRouter)
 app.use('/api/v1/expenses', expensesRouter)
 app.use('/api/v1/wages', wagesRouter)
