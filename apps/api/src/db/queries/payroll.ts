@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js'
-import type { PayrollRun, PayrollRunItem, PayrollRunStatus, PayrollRunItemStatus, WageEntry, PayType } from '@nimbus/shared'
+import type { PayrollRun, PayrollRunItem, PayrollRunStatus, PayrollRunItemStatus, WageEntry, PayType, CompanyBankStatus } from '@nimbus/shared'
 
 // ── Company payroll fields ────────────────────────────────────────────────────
 
@@ -10,6 +10,9 @@ export interface CompanyPayrollData {
   stripeOnboardingComplete: boolean
   stripeCustomerId: string | null
   stripePaymentMethodId: string | null
+  stripeSetupIntentId: string | null
+  stripeMandateId: string | null
+  bankStatus: CompanyBankStatus
   bankLast4: string | null
   bankName: string | null
 }
@@ -17,7 +20,7 @@ export interface CompanyPayrollData {
 export async function getCompanyPayrollData(companyId: string): Promise<CompanyPayrollData | null> {
   const { data, error } = await supabase
     .from('companies')
-    .select('id, name, stripe_account_id, stripe_onboarding_complete, stripe_customer_id, stripe_payment_method_id, bank_last4, bank_name')
+    .select('id, name, stripe_account_id, stripe_onboarding_complete, stripe_customer_id, stripe_payment_method_id, stripe_setup_intent_id, stripe_mandate_id, bank_status, bank_last4, bank_name')
     .eq('id', companyId)
     .single()
 
@@ -30,6 +33,9 @@ export async function getCompanyPayrollData(companyId: string): Promise<CompanyP
     stripeOnboardingComplete: (row['stripe_onboarding_complete'] as boolean | null) ?? false,
     stripeCustomerId: (row['stripe_customer_id'] as string | null) ?? null,
     stripePaymentMethodId: (row['stripe_payment_method_id'] as string | null) ?? null,
+    stripeSetupIntentId: (row['stripe_setup_intent_id'] as string | null) ?? null,
+    stripeMandateId: (row['stripe_mandate_id'] as string | null) ?? null,
+    bankStatus: (row['bank_status'] as CompanyBankStatus | null) ?? 'none',
     bankLast4: (row['bank_last4'] as string | null) ?? null,
     bankName: (row['bank_name'] as string | null) ?? null,
   }
@@ -42,6 +48,9 @@ export async function updateCompanyPayrollData(
     stripeOnboardingComplete: boolean
     stripeCustomerId: string
     stripePaymentMethodId: string
+    stripeSetupIntentId: string
+    stripeMandateId: string
+    bankStatus: CompanyBankStatus
     bankLast4: string
     bankName: string | null
   }>,
@@ -51,6 +60,9 @@ export async function updateCompanyPayrollData(
   if (patch.stripeOnboardingComplete !== undefined) update['stripe_onboarding_complete'] = patch.stripeOnboardingComplete
   if (patch.stripeCustomerId !== undefined) update['stripe_customer_id'] = patch.stripeCustomerId
   if (patch.stripePaymentMethodId !== undefined) update['stripe_payment_method_id'] = patch.stripePaymentMethodId
+  if (patch.stripeSetupIntentId !== undefined) update['stripe_setup_intent_id'] = patch.stripeSetupIntentId
+  if (patch.stripeMandateId !== undefined) update['stripe_mandate_id'] = patch.stripeMandateId
+  if (patch.bankStatus !== undefined) update['bank_status'] = patch.bankStatus
   if (patch.bankLast4 !== undefined) update['bank_last4'] = patch.bankLast4
   if (patch.bankName !== undefined) update['bank_name'] = patch.bankName
 

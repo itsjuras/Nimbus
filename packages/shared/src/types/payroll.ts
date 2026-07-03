@@ -41,10 +41,13 @@ export interface PayrollPreview {
   companyBankSaved: boolean
 }
 
+export type CompanyBankStatus = 'none' | 'pending_verification' | 'verified'
+
 export interface ConnectStatus {
   connected: boolean
   onboardingComplete: boolean
   payoutsEnabled: boolean
+  companyBankStatus: CompanyBankStatus
   companyBankLast4: string | null
   companyBankName: string | null
 }

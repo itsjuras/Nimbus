@@ -350,35 +350,55 @@ function BankDetailsCard({
         </p>
       ) : (
         <form onSubmit={handleSubmit(onSave)} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
-              Account holder name
-            </label>
+          <BankField label="Account holder name" error={errors.accountHolderName?.message}>
             <input {...register('accountHolderName')} className={inputClass} />
-            {errors.accountHolderName && (
-              <p className="mt-1 text-xs text-red-600 dark:text-red-400 normal-case tracking-normal">
-                {errors.accountHolderName.message}
-              </p>
-            )}
+          </BankField>
+
+          <div className="grid grid-cols-2 gap-3">
+            <BankField label="Transit number" error={errors.transitNumber?.message}>
+              <input {...register('transitNumber')} inputMode="numeric" placeholder="12345" className={inputClass} />
+            </BankField>
+            <BankField label="Institution number" error={errors.institutionNumber?.message}>
+              <input {...register('institutionNumber')} inputMode="numeric" placeholder="001" className={inputClass} />
+            </BankField>
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Routing number</label>
-            <input {...register('routingNumber')} inputMode="numeric" placeholder="110000000" className={inputClass} />
-            {errors.routingNumber && (
-              <p className="mt-1 text-xs text-red-600 dark:text-red-400 normal-case tracking-normal">
-                {errors.routingNumber.message}
-              </p>
-            )}
+
+          <BankField label="Account number" error={errors.accountNumber?.message}>
+            <input {...register('accountNumber')} inputMode="numeric" placeholder="1234567" className={inputClass} />
+          </BankField>
+
+          <p className="text-xs font-medium uppercase text-gray-400 dark:text-gray-500 pt-1">
+            Identity (required by Stripe for payouts)
+          </p>
+
+          <BankField label="Email" error={errors.email?.message}>
+            <input {...register('email')} type="email" placeholder="name@email.com" className={inputClass} />
+          </BankField>
+
+          <BankField label="Phone" error={errors.phone?.message}>
+            <input {...register('phone')} type="tel" placeholder="+1 604 555 1234" className={inputClass} />
+          </BankField>
+
+          <BankField label="Date of birth" error={errors.dateOfBirth?.message}>
+            <input {...register('dateOfBirth')} type="date" className={inputClass} />
+          </BankField>
+
+          <BankField label="Street address" error={errors.addressLine1?.message}>
+            <input {...register('addressLine1')} placeholder="123 Main St" className={inputClass} />
+          </BankField>
+
+          <div className="grid grid-cols-2 gap-3">
+            <BankField label="City" error={errors.city?.message}>
+              <input {...register('city')} placeholder="Vancouver" className={inputClass} />
+            </BankField>
+            <BankField label="Province" error={errors.province?.message}>
+              <input {...register('province')} placeholder="BC" maxLength={2} className={inputClass} />
+            </BankField>
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Account number</label>
-            <input {...register('accountNumber')} inputMode="numeric" placeholder="000123456789" className={inputClass} />
-            {errors.accountNumber && (
-              <p className="mt-1 text-xs text-red-600 dark:text-red-400 normal-case tracking-normal">
-                {errors.accountNumber.message}
-              </p>
-            )}
-          </div>
+
+          <BankField label="Postal code" error={errors.postalCode?.message}>
+            <input {...register('postalCode')} placeholder="V6B 1A1" className={inputClass} />
+          </BankField>
 
           {saveBank.error && (
             <p className="text-xs text-red-600 dark:text-red-400 normal-case tracking-normal">
@@ -409,6 +429,16 @@ function BankDetailsCard({
           </p>
         </form>
       )}
+    </div>
+  )
+}
+
+function BankField({ label, error, children }: { label: string; error?: string | undefined; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{label}</label>
+      {children}
+      {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400 normal-case tracking-normal">{error}</p>}
     </div>
   )
 }

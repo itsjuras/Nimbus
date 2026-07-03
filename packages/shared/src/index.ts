@@ -22,8 +22,8 @@ export { CreateExpenseSchema, UpdateExpenseStatusSchema, LogWageSchema, UpdatePa
 export type { CreateExpenseRequest, UpdateExpenseStatusRequest, LogWageRequest, UpdatePayRateRequest, FinancePeriodRequest } from './schemas/finance.js'
 export type { Expense, WageEntry, FinanceSummary, ExpenseCategory, ExpenseStatus, PayType } from './types/finance.js'
 
-export { SaveCompanyBankSchema, SaveCrewBankSchema, RunPayrollSchema } from './schemas/payroll.js'
-export type { SaveCompanyBankRequest, SaveCrewBankRequest, RunPayrollRequest } from './schemas/payroll.js'
+export { SaveCompanyBankSchema, VerifyCompanyBankSchema, SaveCrewBankSchema, RunPayrollSchema } from './schemas/payroll.js'
+export type { SaveCompanyBankRequest, VerifyCompanyBankRequest, SaveCrewBankRequest, RunPayrollRequest } from './schemas/payroll.js'
 export type {
   PayrollRun,
   PayrollRunItem,
@@ -32,6 +32,7 @@ export type {
   PayrollPreview,
   PayrollPreviewLine,
   ConnectStatus,
+  CompanyBankStatus,
 } from './types/payroll.js'
 
 export type { Company, CompanySettings } from './types/company.js'

@@ -148,7 +148,7 @@ export function PayrollTab({ from, to }: { from: string; to: string }) {
                     Cancel
                   </button>
                   <p className="w-full text-[11px] text-gray-400 dark:text-gray-500 normal-case tracking-normal">
-                    By confirming you authorize Nimbus to debit your bank account for {formatMoney(payable)}. Crew are paid by direct deposit once the debit clears (typically 2–5 business days).
+                    By confirming, Nimbus debits your bank account {formatMoney(payable)} under your pre-authorized debit agreement. Crew are paid by direct deposit once the debit clears (typically 2–5 business days).
                   </p>
                 </div>
               ) : (

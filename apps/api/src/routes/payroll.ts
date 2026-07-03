@@ -1,17 +1,23 @@
 import { Router, type Router as ExpressRouter } from 'express'
-import { SaveCompanyBankSchema, SaveCrewBankSchema, RunPayrollSchema } from '@nimbus/shared'
+import { SaveCompanyBankSchema, VerifyCompanyBankSchema, SaveCrewBankSchema, RunPayrollSchema } from '@nimbus/shared'
 import { requireAuth, requireRole } from '../middleware/requireAuth.js'
 import { validate } from '../middleware/validate.js'
 import {
   getConnectStatus,
   startConnectOnboarding,
   saveCompanyBank,
+  verifyCompanyBank,
   saveCrewBank,
   previewPayroll,
   runPayroll,
   listPayrollRuns,
 } from '../services/payrollService.js'
 import { supabase } from '../db/supabase.js'
+
+async function getUserEmail(userId: string): Promise<string | undefined> {
+  const { data } = await supabase.auth.admin.getUserById(userId)
+  return data.user?.email
+}
 
 export const payrollRouter: ExpressRouter = Router()
 
@@ -29,22 +35,44 @@ payrollRouter.get('/connect/status', requireRole('owner', 'manager'), async (req
 // POST /api/v1/payroll/connect/onboard — returns Stripe-hosted onboarding URL
 payrollRouter.post('/connect/onboard', requireRole('owner'), async (req, res, next) => {
   try {
-    const { data } = await supabase.auth.admin.getUserById(req.user.id)
-    const email = data.user?.email
+    const email = await getUserEmail(req.user.id)
     res.json(await startConnectOnboarding(req.user.companyId, email))
   } catch (err) {
     next(err)
   }
 })
 
-// POST /api/v1/payroll/company-bank — save funding bank for ACH debits
+// POST /api/v1/payroll/company-bank — save funding bank; starts microdeposit verification
 payrollRouter.post(
   '/company-bank',
   requireRole('owner'),
   validate(SaveCompanyBankSchema),
   async (req, res, next) => {
     try {
-      res.json(await saveCompanyBank(req.user.companyId, req.body))
+      const email = await getUserEmail(req.user.id)
+      res.json(
+        await saveCompanyBank(
+          req.user.companyId,
+          req.body,
+          email,
+          req.ip ?? '0.0.0.0',
+          req.headers['user-agent'] ?? 'unknown',
+        ),
+      )
+    } catch (err) {
+      next(err)
+    }
+  },
+)
+
+// POST /api/v1/payroll/company-bank/verify — confirm the two microdeposit amounts
+payrollRouter.post(
+  '/company-bank/verify',
+  requireRole('owner'),
+  validate(VerifyCompanyBankSchema),
+  async (req, res, next) => {
+    try {
+      res.json(await verifyCompanyBank(req.user.companyId, req.body))
     } catch (err) {
       next(err)
     }
@@ -87,13 +115,7 @@ payrollRouter.get('/preview', requireRole('owner', 'manager'), async (req, res, 
 // POST /api/v1/payroll/run — debit company bank and pay crew
 payrollRouter.post('/run', requireRole('owner'), validate(RunPayrollSchema), async (req, res, next) => {
   try {
-    const run = await runPayroll(
-      req.user.companyId,
-      req.user.id,
-      req.body,
-      req.ip ?? '0.0.0.0',
-      req.headers['user-agent'] ?? 'unknown',
-    )
+    const run = await runPayroll(req.user.companyId, req.user.id, req.body)
     res.status(201).json(run)
   } catch (err) {
     next(err)

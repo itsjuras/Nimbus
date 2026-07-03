@@ -5,6 +5,7 @@ import type {
   PayrollPreview,
   PayrollRun,
   SaveCompanyBankRequest,
+  VerifyCompanyBankRequest,
   SaveCrewBankRequest,
   RunPayrollRequest,
 } from '@nimbus/shared'
@@ -29,8 +30,17 @@ export function useSaveCompanyBank() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (data: SaveCompanyBankRequest) =>
-      api.post<{ bankLast4: string; bankName: string | null }>('/api/v1/payroll/company-bank', data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: CONNECT_KEY }),
+      api.post<ConnectStatus>('/api/v1/payroll/company-bank', data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['payroll'] }),
+  })
+}
+
+export function useVerifyCompanyBank() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: VerifyCompanyBankRequest) =>
+      api.post<ConnectStatus>('/api/v1/payroll/company-bank/verify', data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['payroll'] }),
   })
 }
 

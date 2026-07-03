@@ -26,11 +26,21 @@ import type {
   PayrollPreviewLine,
   PayrollRun,
   SaveCompanyBankRequest,
+  VerifyCompanyBankRequest,
   SaveCrewBankRequest,
   RunPayrollRequest,
 } from '@nimbus/shared'
 
 const siteUrl = (): string => process.env['SITE_URL'] ?? 'http://localhost:5173'
+
+// Stripe rejects localhost/example URLs in business profiles; recipient
+// accounts need *a* valid product URL, not necessarily the dev one
+const businessProfileUrl = (): string => {
+  const url = siteUrl()
+  return url.startsWith('https://') ? url : 'https://nimbus-app.vercel.app'
+}
+
+const CLEANING_SERVICES_MCC = '7349'
 
 // ── Owner: Stripe Connect onboarding ──────────────────────────────────────────
 
@@ -38,14 +48,14 @@ export async function getConnectStatus(companyId: string): Promise<ConnectStatus
   const company = await getCompanyPayrollData(companyId)
   if (!company) throw new AppError('NOT_FOUND', 'Company not found', 404)
 
+  const base = {
+    companyBankStatus: company.bankStatus,
+    companyBankLast4: company.bankLast4,
+    companyBankName: company.bankName,
+  }
+
   if (!company.stripeAccountId) {
-    return {
-      connected: false,
-      onboardingComplete: false,
-      payoutsEnabled: false,
-      companyBankLast4: company.bankLast4,
-      companyBankName: company.bankName,
-    }
+    return { connected: false, onboardingComplete: false, payoutsEnabled: false, ...base }
   }
 
   const account = await getStripe().accounts.retrieve(company.stripeAccountId)
@@ -59,8 +69,7 @@ export async function getConnectStatus(companyId: string): Promise<ConnectStatus
     connected: true,
     onboardingComplete,
     payoutsEnabled: Boolean(account.payouts_enabled),
-    companyBankLast4: company.bankLast4,
-    companyBankName: company.bankName,
+    ...base,
   }
 }
 
@@ -73,9 +82,9 @@ export async function startConnectOnboarding(companyId: string, email: string | 
   if (!accountId) {
     const account = await getStripe().accounts.create({
       type: 'express',
-      country: 'US',
+      country: 'CA',
       ...(email && { email }),
-      capabilities: { transfers: { requested: true } },
+      capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
       business_profile: { name: company.name },
       metadata: { nimbus_company_id: companyId },
     })
@@ -93,12 +102,15 @@ export async function startConnectOnboarding(companyId: string, email: string | 
   return { url: link.url }
 }
 
-// ── Owner: company funding bank (ACH debit source) ───────────────────────────
+// ── Owner: company funding bank (pre-authorized debit source) ─────────────────
 
 export async function saveCompanyBank(
   companyId: string,
   input: SaveCompanyBankRequest,
-): Promise<{ bankLast4: string; bankName: string | null }> {
+  ownerEmail: string | undefined,
+  requestIp: string,
+  userAgent: string,
+): Promise<ConnectStatus> {
   const company = await getCompanyPayrollData(companyId)
   if (!company) throw new AppError('NOT_FOUND', 'Company not found', 404)
 
@@ -106,6 +118,7 @@ export async function saveCompanyBank(
   if (!customerId) {
     const customer = await getStripe().customers.create({
       name: company.name,
+      ...(ownerEmail && { email: ownerEmail }),
       metadata: { nimbus_company_id: companyId },
     })
     customerId = customer.id
@@ -113,28 +126,88 @@ export async function saveCompanyBank(
   }
 
   const paymentMethod = await getStripe().paymentMethods.create({
-    type: 'us_bank_account',
-    us_bank_account: {
-      routing_number: input.routingNumber,
+    type: 'acss_debit',
+    acss_debit: {
+      institution_number: input.institutionNumber,
+      transit_number: input.transitNumber,
       account_number: input.accountNumber,
-      account_holder_type: 'company',
-      account_type: input.accountType,
     },
-    billing_details: { name: input.accountHolderName },
+    billing_details: { name: input.accountHolderName, ...(ownerEmail && { email: ownerEmail }) },
   })
 
-  await getStripe().paymentMethods.attach(paymentMethod.id, { customer: customerId })
+  // Confirming the SetupIntent triggers microdeposits and records the debit mandate
+  const setupIntent = await getStripe().setupIntents.create({
+    customer: customerId,
+    payment_method: paymentMethod.id,
+    payment_method_types: ['acss_debit'],
+    confirm: true,
+    payment_method_options: {
+      acss_debit: {
+        currency: 'cad',
+        verification_method: 'microdeposits',
+        mandate_options: {
+          payment_schedule: 'sporadic',
+          transaction_type: 'business',
+        },
+      },
+    },
+    mandate_data: {
+      customer_acceptance: {
+        type: 'online',
+        online: { ip_address: requestIp, user_agent: userAgent },
+      },
+    },
+    metadata: { nimbus_company_id: companyId },
+  })
 
-  const bankLast4 = paymentMethod.us_bank_account?.last4 ?? input.accountNumber.slice(-4)
-  const bankName = paymentMethod.us_bank_account?.bank_name ?? null
+  const bankLast4 = paymentMethod.acss_debit?.last4 ?? input.accountNumber.slice(-4)
+  const bankName = paymentMethod.acss_debit?.bank_name ?? null
+  const verified = setupIntent.status === 'succeeded'
+  const mandateId = typeof setupIntent.mandate === 'string' ? setupIntent.mandate : setupIntent.mandate?.id
 
   await updateCompanyPayrollData(companyId, {
     stripePaymentMethodId: paymentMethod.id,
+    stripeSetupIntentId: setupIntent.id,
+    ...(mandateId && { stripeMandateId: mandateId }),
+    bankStatus: verified ? 'verified' : 'pending_verification',
     bankLast4,
     bankName,
   })
 
-  return { bankLast4, bankName }
+  return getConnectStatus(companyId)
+}
+
+export async function verifyCompanyBank(
+  companyId: string,
+  input: VerifyCompanyBankRequest,
+): Promise<ConnectStatus> {
+  const company = await getCompanyPayrollData(companyId)
+  if (!company) throw new AppError('NOT_FOUND', 'Company not found', 404)
+  if (!company.stripeSetupIntentId || company.bankStatus !== 'pending_verification') {
+    throw new AppError('NO_PENDING_VERIFICATION', 'No bank account awaiting verification', 400)
+  }
+
+  let setupIntent
+  try {
+    setupIntent = await getStripe().setupIntents.verifyMicrodeposits(company.stripeSetupIntentId, {
+      amounts: input.amounts,
+    })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Verification failed'
+    throw new AppError('VERIFICATION_FAILED', message, 400)
+  }
+
+  if (setupIntent.status !== 'succeeded') {
+    throw new AppError('VERIFICATION_FAILED', `Verification did not complete (status: ${setupIntent.status})`, 400)
+  }
+
+  const mandateId = typeof setupIntent.mandate === 'string' ? setupIntent.mandate : setupIntent.mandate?.id
+  await updateCompanyPayrollData(companyId, {
+    bankStatus: 'verified',
+    ...(mandateId && { stripeMandateId: mandateId }),
+  })
+
+  return getConnectStatus(companyId)
 }
 
 // ── Crew: payout bank details ─────────────────────────────────────────────────
@@ -150,9 +223,9 @@ export async function saveCrewBank(
 
   const externalAccount = {
     object: 'bank_account' as const,
-    country: 'US',
-    currency: 'usd',
-    routing_number: input.routingNumber,
+    country: 'CA',
+    currency: 'cad',
+    routing_number: `${input.transitNumber}${input.institutionNumber}`,
     account_number: input.accountNumber,
     account_holder_name: input.accountHolderName,
     account_holder_type: 'individual' as const,
@@ -165,18 +238,48 @@ export async function saveCrewBank(
     const nameParts = profile.fullName.trim().split(/\s+/)
     const firstName = nameParts[0] ?? profile.fullName
     const lastName = nameParts.slice(1).join(' ') || firstName
+    const [year, month, day] = input.dateOfBirth.split('-').map(Number)
 
     const account = await getStripe().accounts.create({
       type: 'custom',
-      country: 'US',
+      country: 'CA',
       business_type: 'individual',
-      individual: { first_name: firstName, last_name: lastName },
+      individual: {
+        first_name: firstName,
+        last_name: lastName,
+        email: input.email,
+        phone: input.phone,
+        dob: { day: day ?? 1, month: month ?? 1, year: year ?? 1990 },
+        address: {
+          line1: input.addressLine1,
+          city: input.city,
+          state: input.province.toUpperCase(),
+          postal_code: input.postalCode.toUpperCase(),
+          country: 'CA',
+        },
+        relationship: { title: 'Crew Member' },
+      },
+      business_profile: {
+        mcc: CLEANING_SERVICES_MCC,
+        product_description: 'Cleaning crew member receiving wage payouts',
+        url: businessProfileUrl(),
+      },
       capabilities: { transfers: { requested: true } },
       tos_acceptance: { date: Math.floor(Date.now() / 1000), ip: requestIp },
       external_account: externalAccount,
       metadata: { nimbus_profile_id: profileId, nimbus_company_id: companyId },
     })
     accountId = account.id
+
+    if (account.capabilities?.transfers !== 'active') {
+      const due = account.requirements?.currently_due ?? []
+      // Account exists but can't receive transfers yet — surface what Stripe still wants
+      throw new AppError(
+        'RECIPIENT_INCOMPLETE',
+        `Stripe needs more information before this person can be paid: ${due.join(', ') || 'unknown requirements'}`,
+        400,
+      )
+    }
   } else {
     const bankAccount = await getStripe().accounts.createExternalAccount(accountId, {
       external_account: externalAccount as unknown as string,
@@ -232,7 +335,7 @@ export async function previewPayroll(companyId: string, from: string, to: string
     totalCents: lines.reduce((sum, line) => sum + line.totalCents, 0),
     payableCents: lines.filter((l) => l.hasBank).reduce((sum, line) => sum + line.totalCents, 0),
     onboardingComplete: company.stripeOnboardingComplete,
-    companyBankSaved: Boolean(company.stripeCustomerId && company.stripePaymentMethodId),
+    companyBankSaved: company.bankStatus === 'verified',
   }
 }
 
@@ -242,17 +345,20 @@ export async function runPayroll(
   companyId: string,
   initiatedBy: string,
   input: RunPayrollRequest,
-  requestIp: string,
-  userAgent: string,
 ): Promise<PayrollRun> {
   const company = await getCompanyPayrollData(companyId)
   if (!company) throw new AppError('NOT_FOUND', 'Company not found', 404)
 
   if (!company.stripeAccountId || !company.stripeOnboardingComplete) {
-    throw new AppError('CONNECT_INCOMPLETE', 'Complete Stripe onboarding in Settings before running payroll', 400)
+    throw new AppError('CONNECT_INCOMPLETE', 'Complete business verification in Settings before running payroll', 400)
   }
-  if (!company.stripeCustomerId || !company.stripePaymentMethodId) {
-    throw new AppError('NO_COMPANY_BANK', 'Add your company bank account in Settings before running payroll', 400)
+  if (
+    !company.stripeCustomerId ||
+    !company.stripePaymentMethodId ||
+    !company.stripeMandateId ||
+    company.bankStatus !== 'verified'
+  ) {
+    throw new AppError('NO_COMPANY_BANK', 'Add and verify your payroll bank account in Settings before running payroll', 400)
   }
 
   const entries = await getUnpaidWageEntries(companyId, input.from, input.to)
@@ -291,17 +397,13 @@ export async function runPayroll(
   try {
     const paymentIntent = await getStripe().paymentIntents.create({
       amount: totalCents,
-      currency: 'usd',
+      currency: 'cad',
       customer: company.stripeCustomerId,
       payment_method: company.stripePaymentMethodId,
-      payment_method_types: ['us_bank_account'],
+      payment_method_types: ['acss_debit'],
+      off_session: true,
       confirm: true,
-      mandate_data: {
-        customer_acceptance: {
-          type: 'online',
-          online: { ip_address: requestIp, user_agent: userAgent },
-        },
-      },
+      mandate: company.stripeMandateId,
       description: `Payroll ${input.from} to ${input.to}`,
       metadata: { payroll_run_id: runId, nimbus_company_id: companyId },
     })
@@ -361,7 +463,7 @@ async function processTransfers(runId: string): Promise<void> {
     try {
       const transfer = await getStripe().transfers.create({
         amount: item.amountCents,
-        currency: 'usd',
+        currency: 'cad',
         destination,
         ...(sourceTransaction && { source_transaction: sourceTransaction }),
         transfer_group: `payroll_${runId}`,
