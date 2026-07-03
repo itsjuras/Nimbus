@@ -324,6 +324,7 @@ The core product is substantially complete and functional. Below is the current 
 - **Invoicing** — Stripe invoice creation, line items, send (emails client via Stripe), webhook syncs paid/void status
 - **Finance** — Expense tracking with approval flow, wage logging, per-period summary (revenue, costs, profit)
 - **Pay rate management** — Crew members have `pay_type` (hourly/per_job) and `pay_rate_cents`; per-job wages auto-logged on completion
+- **Payroll (Stripe Connect)** — Owner verifies business via Express onboarding and saves a funding bank in Settings; crew bank details entered in-app (tokenized by Stripe, only last4 stored); "Run Payroll" on Finance page ACH-debits the company bank and transfers each crew member's unpaid wages to their bank. Runs tracked in `payroll_runs`/`payroll_run_items`; wage entries link via `payroll_run_id` (NULL = unpaid). Webhook handles funding success/failure with a lazy-sync fallback on `GET /payroll/runs`.
 - **Push notifications** — Expo push tokens, crew notified on job assignment, owner notified on status changes
 - **Mobile app** — Expo 52 / React Native with full feature parity: crew and owner flows, NativeWind styling
 - **Demo mode** — Full parallel `/demo/*` routes using hardcoded data (no auth required), useful for sales demos
@@ -333,5 +334,5 @@ The core product is substantially complete and functional. Below is the current 
 
 - **SMTP custom sending** — Migration 009 added SMTP columns to `companies`; no API route or UI exposes them. Dead schema. Decide: implement or remove.
 - **Google OAuth / Gmail** — Migration 010 + `apps/api/src/lib/googleAuth.ts` exist with helpers; no route or UI uses them. Dead code.
-- **Bank account settings** — Placeholder section in `SettingsPage.tsx`; no backend behind it.
 - **Crew time-off / availability** — DB tables and API routes exist (`apps/api/src/routes/mobile.ts`); unclear if mobile app surfaces these to users.
+- **Payroll follow-ups** — Crew bank entry not yet in the mobile app (owner enters it on web CrewDetailPage); live-mode ACH microdeposit verification has no UI (test mode verifies instantly); Stripe webhook endpoint needs "listen to events on connected accounts" enabled for `account.updated` (the lazy sync in `GET /payroll/connect/status` covers it meanwhile).

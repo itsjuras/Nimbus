@@ -9,5 +9,6 @@ export interface Profile {
   avatarUrl: string | null
   payType: 'hourly' | 'per_job' | null
   payRateCents: number | null
+  bankLast4: string | null
   createdAt: string
 }

@@ -14,6 +14,7 @@ function toWageEntry(row: Record<string, unknown>): WageEntry {
     totalCents: row['total_cents'] as number,
     periodDate: row['period_date'] as string,
     notes: (row['notes'] as string | null) ?? null,
+    payrollRunId: (row['payroll_run_id'] as string | null) ?? null,
     createdAt: row['created_at'] as string,
   }
 }

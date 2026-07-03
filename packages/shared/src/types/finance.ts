@@ -30,6 +30,7 @@ export interface WageEntry {
   totalCents: number
   periodDate: string
   notes: string | null
+  payrollRunId: string | null
   createdAt: string
 }
 

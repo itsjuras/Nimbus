@@ -2,10 +2,18 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { UpdatePayRateSchema, type UpdatePayRateRequest, type UserRole, type JobStatus } from '@nimbus/shared'
+import {
+  UpdatePayRateSchema,
+  SaveCrewBankSchema,
+  type UpdatePayRateRequest,
+  type SaveCrewBankRequest,
+  type UserRole,
+  type JobStatus,
+} from '@nimbus/shared'
 import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { useTheme } from '../../hooks/useTheme'
 import { useCrewMembers, useCrewMemberJobs, useUpdateCrewMember } from '../../hooks/useCrew'
+import { useSaveCrewBank } from '../../hooks/usePayroll'
 
 const ROLE_BADGE: Record<UserRole, string> = {
   owner: 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900',
@@ -227,6 +235,12 @@ export default function CrewDetailPage() {
               </div>
             )}
           </div>
+
+          <BankDetailsCard
+            profileId={member.id}
+            fullName={member.fullName}
+            bankLast4={member.bankLast4}
+          />
         </div>
 
         {/* Main panel: job history */}
@@ -279,6 +293,122 @@ export default function CrewDetailPage() {
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+function BankDetailsCard({
+  profileId,
+  fullName,
+  bankLast4,
+}: {
+  profileId: string
+  fullName: string
+  bankLast4: string | null
+}) {
+  const [editing, setEditing] = useState(false)
+  const saveBank = useSaveCrewBank(profileId)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<SaveCrewBankRequest>({
+    resolver: zodResolver(SaveCrewBankSchema),
+    defaultValues: { accountHolderName: fullName },
+  })
+
+  async function onSave(data: SaveCrewBankRequest) {
+    await saveBank.mutateAsync(data)
+    reset({ accountHolderName: fullName })
+    setEditing(false)
+  }
+
+  const showForm = editing || !bankLast4
+
+  return (
+    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Bank details</h2>
+        {bankLast4 && !editing && (
+          <button
+            onClick={() => setEditing(true)}
+            className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          >
+            Replace
+          </button>
+        )}
+      </div>
+
+      {!showForm ? (
+        <p className="text-sm text-gray-700 dark:text-gray-300 normal-case tracking-normal">
+          Bank account ····{bankLast4}
+          <span className="ml-2 rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+            Connected
+          </span>
+        </p>
+      ) : (
+        <form onSubmit={handleSubmit(onSave)} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
+              Account holder name
+            </label>
+            <input {...register('accountHolderName')} className={inputClass} />
+            {errors.accountHolderName && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400 normal-case tracking-normal">
+                {errors.accountHolderName.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Routing number</label>
+            <input {...register('routingNumber')} inputMode="numeric" placeholder="110000000" className={inputClass} />
+            {errors.routingNumber && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400 normal-case tracking-normal">
+                {errors.routingNumber.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Account number</label>
+            <input {...register('accountNumber')} inputMode="numeric" placeholder="000123456789" className={inputClass} />
+            {errors.accountNumber && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400 normal-case tracking-normal">
+                {errors.accountNumber.message}
+              </p>
+            )}
+          </div>
+
+          {saveBank.error && (
+            <p className="text-xs text-red-600 dark:text-red-400 normal-case tracking-normal">
+              {saveBank.error instanceof Error ? saveBank.error.message : 'Failed to save'}
+            </p>
+          )}
+
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="rounded-lg bg-gray-900 dark:bg-gray-100 px-3 py-1.5 text-xs font-semibold uppercase text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200 disabled:opacity-50"
+            >
+              {isSubmitting ? 'Saving…' : 'Save'}
+            </button>
+            {editing && (
+              <button
+                type="button"
+                onClick={() => { reset({ accountHolderName: fullName }); setEditing(false) }}
+                className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold uppercase text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal">
+            Used to pay wages via direct deposit. Details go straight to Stripe — Nimbus never stores account numbers.
+          </p>
+        </form>
+      )}
     </div>
   )
 }

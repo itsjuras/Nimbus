@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { SidebarToggle } from '../../components/ui/SidebarToggle'
+import { PayrollSettings } from '../../components/payroll/PayrollSettings'
 import { useCompanySettings, useUpdateCompanySettings } from '../../hooks/useCompany'
 import { useTheme } from '../../hooks/useTheme'
 
@@ -113,10 +114,7 @@ export default function SettingsPage() {
           </form>
         )}
 
-        <section className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
-          <h2 className={`${sectionLabel} mb-2`}>Bank account</h2>
-          <p className={`${hint} normal-case tracking-normal`}>Bank account details and payment settings — coming soon.</p>
-        </section>
+        <PayrollSettings />
       </div>
     </div>
   )

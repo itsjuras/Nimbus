@@ -11,6 +11,7 @@ function toProfile(row: Record<string, unknown>): Profile {
     avatarUrl: (row['avatar_url'] as string | null) ?? null,
     payType: (row['pay_type'] as 'hourly' | 'per_job' | null) ?? null,
     payRateCents: (row['pay_rate_cents'] as number | null) ?? null,
+    bankLast4: (row['bank_last4'] as string | null) ?? null,
     createdAt: row['created_at'] as string,
   }
 }

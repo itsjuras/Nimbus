@@ -9,6 +9,7 @@ import {
   setClientStripeCustomerId,
 } from '../db/queries/invoices.js'
 import { AppError } from '../middleware/errorHandler.js'
+import { handlePayrollWebhookEvent } from './payrollService.js'
 import type { Invoice, CreateInvoiceRequest } from '@nimbus/shared'
 
 export async function listInvoices(companyId: string): Promise<Invoice[]> {
@@ -116,6 +117,9 @@ export async function handleStripeWebhook(
   } catch {
     throw new AppError('WEBHOOK_INVALID', 'Invalid Stripe webhook signature', 400)
   }
+
+  // Payroll events (funding debits, Connect account updates) are handled separately
+  if (await handlePayrollWebhookEvent(event)) return
 
   if (event.type === 'invoice.paid') {
     const inv = event.data.object

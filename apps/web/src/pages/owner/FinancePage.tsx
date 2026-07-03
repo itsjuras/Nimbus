@@ -5,10 +5,11 @@ import { useFinanceSummary } from '../../hooks/useFinance'
 import { useExpenses, useReviewExpense, useDeleteExpense, useCreateExpense } from '../../hooks/useExpenses'
 import { useWageEntries, useDeleteWageEntry } from '../../hooks/useWages'
 import { useTheme } from '../../hooks/useTheme'
+import { PayrollTab } from '../../components/payroll/PayrollTab'
 import type { Expense, WageEntry } from '@nimbus/shared'
 
 type Period = 'this_month' | 'last_month' | 'this_year' | 'all_time'
-type Tab = 'expenses' | 'wages'
+type Tab = 'expenses' | 'wages' | 'payroll'
 
 function getPeriodRange(period: Period): { from: string; to: string; label: string } {
   const now = new Date()
@@ -162,8 +163,8 @@ export default function FinancePage() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-5 flex gap-1 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-1 max-w-xs">
-        {(['expenses', 'wages'] as Tab[]).map((t) => (
+      <div className="mb-5 flex gap-1 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-1 max-w-md">
+        {(['expenses', 'wages', 'payroll'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -259,6 +260,9 @@ export default function FinancePage() {
           )}
         </div>
       )}
+
+      {/* Payroll tab */}
+      {tab === 'payroll' && <PayrollTab from={from} to={to} />}
 
       <AddExpenseModal
         visible={showExpenseModal}
@@ -415,12 +419,18 @@ function WageRow({
           <span className="text-base font-semibold text-gray-900 dark:text-gray-100 normal-case tracking-normal">
             {formatMoney(entry.totalCents)}
           </span>
-          <button
-            onClick={onDelete}
-            className="text-xs text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 normal-case tracking-normal"
-          >
-            Delete
-          </button>
+          {entry.payrollRunId ? (
+            <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400" style={{ fontFamily: 'IBM Plex Mono, monospace' }}>
+              Paid
+            </span>
+          ) : (
+            <button
+              onClick={onDelete}
+              className="text-xs text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 normal-case tracking-normal"
+            >
+              Delete
+            </button>
+          )}
         </div>
       </div>
     </div>
