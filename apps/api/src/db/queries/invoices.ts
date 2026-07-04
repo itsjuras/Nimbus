@@ -133,9 +133,11 @@ export async function updateInvoiceStatus(
   stripeInvoiceId: string,
   status: InvoiceStatus,
   paidAt?: string,
+  hostedUrl?: string,
 ): Promise<void> {
   const patch: Record<string, unknown> = { status }
   if (paidAt) patch['paid_at'] = paidAt
+  if (hostedUrl) patch['stripe_invoice_url'] = hostedUrl
 
   await supabase
     .from('invoices')

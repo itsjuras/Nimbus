@@ -43,11 +43,16 @@ export async function createInvoice(
     await setClientStripeCustomerId(input.clientId, stripeCustomerId)
   }
 
-  // Create the Stripe invoice
+  // Create the Stripe invoice. collection_method 'send_invoice' is required for
+  // emailing the client a payable invoice, and it demands a due date — default
+  // to 30 days out when none was picked.
   const stripeInvoice = await getStripe().invoices.create({
     customer: stripeCustomerId,
     currency: input.currency,
-    ...(input.dueDate && { due_date: Math.floor(new Date(input.dueDate).getTime() / 1000) }),
+    collection_method: 'send_invoice',
+    ...(input.dueDate
+      ? { due_date: Math.floor(new Date(input.dueDate).getTime() / 1000) }
+      : { days_until_due: 30 }),
     auto_advance: false, // We control when it gets sent
     metadata: { nimbus_company_id: companyId, ...(input.jobId && { nimbus_job_id: input.jobId }) },
   })
@@ -97,10 +102,12 @@ export async function sendInvoice(id: string, companyId: string): Promise<Invoic
     throw new AppError('INVOICE_NO_STRIPE_ID', 'Invoice is not linked to Stripe', 500)
   }
 
-  // Finalise and send via Stripe — this emails the client directly
-  await getStripe().invoices.sendInvoice(invoice.stripeInvoiceId)
+  // Finalise and send via Stripe — this emails the client directly.
+  // The hosted payment URL only exists once the invoice is finalised,
+  // so capture it here rather than at creation time.
+  const sent = await getStripe().invoices.sendInvoice(invoice.stripeInvoiceId)
 
-  await updateInvoiceStatus(invoice.stripeInvoiceId, 'sent')
+  await updateInvoiceStatus(invoice.stripeInvoiceId, 'sent', undefined, sent.hosted_invoice_url ?? undefined)
 
   return getInvoice(id, companyId)
 }
