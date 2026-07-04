@@ -131,10 +131,15 @@ export interface ParsedThreadSummary {
   messageCount: number
 }
 
-export async function listInboxThreads(refreshToken: string, maxResults = 25): Promise<ParsedThreadSummary[]> {
+async function listThreadsByLabel(
+  refreshToken: string,
+  labelId: 'INBOX' | 'SENT',
+  ownEmail: string,
+  maxResults = 25,
+): Promise<ParsedThreadSummary[]> {
   const list = await gmailFetch<{ threads?: { id: string }[] }>(
     refreshToken,
-    `/threads?labelIds=INBOX&maxResults=${maxResults}`,
+    `/threads?labelIds=${labelId}&maxResults=${maxResults}`,
   )
   const threadIds = (list.threads ?? []).map((t) => t.id)
   if (threadIds.length === 0) return []
@@ -143,7 +148,7 @@ export async function listInboxThreads(refreshToken: string, maxResults = 25): P
     threadIds.map((id) =>
       gmailFetch<GmailThread>(
         refreshToken,
-        `/threads/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`,
+        `/threads/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Date`,
       ),
     ),
   )
@@ -152,18 +157,38 @@ export async function listInboxThreads(refreshToken: string, maxResults = 25): P
     const messages = thread.messages ?? []
     const first = messages[0]
     const last = messages[messages.length - 1]
-    const from = parseAddress(last ? header(last, 'From') : '')
+    const lastFrom = last ? parseAddress(header(last, 'From')) : { name: '', email: '' }
+    // Row shows the *other* party — if the last message was sent by us, that's the "To" address
+    const isOwnLast = last ? lastFrom.email === ownEmail.toLowerCase() : false
+    const counterpart = isOwnLast ? parseAddress(header(last!, 'To')) : lastFrom
+
     return {
       id: thread.id,
       subject: first ? header(first, 'Subject') || '(no subject)' : '(no subject)',
-      fromName: from.name,
-      fromEmail: from.email,
+      fromName: counterpart.name,
+      fromEmail: counterpart.email,
       snippet: last?.snippet ?? '',
       date: last?.internalDate ? new Date(Number(last.internalDate)).toISOString() : '',
       unread: messages.some((m) => m.labelIds?.includes('UNREAD')),
       messageCount: messages.length,
     }
   })
+}
+
+export async function listInboxThreads(
+  refreshToken: string,
+  ownEmail: string,
+  maxResults = 25,
+): Promise<ParsedThreadSummary[]> {
+  return listThreadsByLabel(refreshToken, 'INBOX', ownEmail, maxResults)
+}
+
+export async function listSentThreads(
+  refreshToken: string,
+  ownEmail: string,
+  maxResults = 25,
+): Promise<ParsedThreadSummary[]> {
+  return listThreadsByLabel(refreshToken, 'SENT', ownEmail, maxResults)
 }
 
 export interface ParsedMessage {

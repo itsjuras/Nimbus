@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useInbox, useInboxThread, useReplyToThread, useGenerateDraft, useConnectGmail } from '../../hooks/useEmails'
+import { useInbox, useSentEmails, useInboxThread, useReplyToThread, useGenerateDraft, useConnectGmail } from '../../hooks/useEmails'
 import type { GmailStatus, InboxThread, InboxThreadDetail } from '@nimbus/shared'
 
 const inputClass =
@@ -17,9 +17,53 @@ function formatDate(iso: string) {
 }
 
 export function InboxTab({ gmailStatus }: { gmailStatus: GmailStatus | undefined }) {
-  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const connected = Boolean(gmailStatus?.connected)
   const { data: threads, isLoading, error } = useInbox(connected)
+
+  return (
+    <MailListView
+      connected={connected}
+      threads={threads}
+      isLoading={isLoading}
+      error={error}
+      emptyMessage="Your inbox is empty."
+      direction="inbox"
+    />
+  )
+}
+
+export function SentTab({ gmailStatus }: { gmailStatus: GmailStatus | undefined }) {
+  const connected = Boolean(gmailStatus?.connected)
+  const { data: threads, isLoading, error } = useSentEmails(connected)
+
+  return (
+    <MailListView
+      connected={connected}
+      threads={threads}
+      isLoading={isLoading}
+      error={error}
+      emptyMessage="You haven't sent any emails yet."
+      direction="sent"
+    />
+  )
+}
+
+function MailListView({
+  connected,
+  threads,
+  isLoading,
+  error,
+  emptyMessage,
+  direction,
+}: {
+  connected: boolean
+  threads: InboxThread[] | undefined
+  isLoading: boolean
+  error: unknown
+  emptyMessage: string
+  direction: 'inbox' | 'sent'
+}) {
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
 
   if (!connected) {
     return <ConnectGmailCard />
@@ -50,7 +94,7 @@ export function InboxTab({ gmailStatus }: { gmailStatus: GmailStatus | undefined
   if (!threads || threads.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-12 text-center">
-        <p className="text-gray-500 dark:text-gray-400 normal-case tracking-normal">Your inbox is empty.</p>
+        <p className="text-gray-500 dark:text-gray-400 normal-case tracking-normal">{emptyMessage}</p>
       </div>
     )
   }
@@ -62,6 +106,7 @@ export function InboxTab({ gmailStatus }: { gmailStatus: GmailStatus | undefined
           key={thread.id}
           thread={thread}
           showBorder={i < threads.length - 1}
+          direction={direction}
           onClick={() => setSelectedThreadId(thread.id)}
         />
       ))}
@@ -101,7 +146,17 @@ function ConnectGmailCard() {
   )
 }
 
-function ThreadRow({ thread, showBorder, onClick }: { thread: InboxThread; showBorder: boolean; onClick: () => void }) {
+function ThreadRow({
+  thread,
+  showBorder,
+  direction,
+  onClick,
+}: {
+  thread: InboxThread
+  showBorder: boolean
+  direction: 'inbox' | 'sent'
+  onClick: () => void
+}) {
   return (
     <button
       onClick={onClick}
@@ -111,7 +166,7 @@ function ThreadRow({ thread, showBorder, onClick }: { thread: InboxThread; showB
     >
       <div className="flex items-center justify-between gap-3">
         <p className={`truncate text-sm normal-case tracking-normal ${thread.unread ? 'font-bold text-gray-900 dark:text-gray-100' : 'font-medium text-gray-700 dark:text-gray-300'}`}>
-          {thread.fromName}
+          {direction === 'sent' ? `To: ${thread.fromName}` : thread.fromName}
         </p>
         <div className="flex shrink-0 items-center gap-2">
           {thread.clientName && (

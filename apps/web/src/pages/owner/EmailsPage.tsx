@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { SidebarToggle } from '../../components/ui/SidebarToggle'
-import { InboxTab } from '../../components/emails/InboxTab'
+import { InboxTab, SentTab } from '../../components/emails/InboxTab'
 import { useClients } from '../../hooks/useClients'
 import { useGenerateDraft, useSendEmail, useGmailStatus, useDisconnectGmail } from '../../hooks/useEmails'
 import { useTheme } from '../../hooks/useTheme'
 
 type Step = 'compose' | 'draft'
-type Tab = 'inbox' | 'compose'
+type Tab = 'inbox' | 'sent' | 'compose'
 
 export default function EmailsPage() {
   const [searchParams] = useSearchParams()
@@ -96,7 +96,7 @@ export default function EmailsPage() {
       <div className="mx-auto max-w-3xl">
         <div className="mb-5 flex flex-wrap items-center gap-3">
           <div className="flex gap-1 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-1">
-            {(['inbox', 'compose'] as Tab[]).map((t) => (
+            {(['inbox', 'sent', 'compose'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -126,9 +126,10 @@ export default function EmailsPage() {
         </div>
 
         {tab === 'inbox' && <InboxTab gmailStatus={gmailStatus} />}
+        {tab === 'sent' && <SentTab gmailStatus={gmailStatus} />}
       </div>
 
-      <div className={`mx-auto max-w-2xl ${tab !== 'compose' ? 'hidden' : ''}`}>
+      <div className={`mx-auto max-w-3xl ${tab !== 'compose' ? 'hidden' : ''}`}>
         {step === 'compose' ? (
           <ComposeStep
             clients={clients}

@@ -3,7 +3,7 @@ import { GenerateEmailDraftSchema, SendEmailSchema, ReplyEmailSchema } from '@ni
 import { requireAuth, requireRole } from '../middleware/requireAuth.js'
 import { validate } from '../middleware/validate.js'
 import { generateDraft, sendEmail } from '../services/emailService.js'
-import { getInbox, getInboxThread, replyToThread } from '../services/gmailService.js'
+import { getInbox, getSentEmails, getInboxThread, replyToThread } from '../services/gmailService.js'
 
 export const emailsRouter = Router()
 
@@ -14,6 +14,15 @@ emailsRouter.use(requireRole('owner', 'manager'))
 emailsRouter.get('/inbox', async (req, res, next) => {
   try {
     res.json(await getInbox(req.user.companyId))
+  } catch (err) {
+    next(err)
+  }
+})
+
+// GET /api/v1/emails/sent — recent sent Gmail threads with client matching
+emailsRouter.get('/sent', async (req, res, next) => {
+  try {
+    res.json(await getSentEmails(req.user.companyId))
   } catch (err) {
     next(err)
   }

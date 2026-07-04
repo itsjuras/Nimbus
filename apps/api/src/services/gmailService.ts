@@ -1,5 +1,5 @@
 import { createOAuth2Client, generateOAuthState, consumeOAuthState } from '../lib/googleAuth.js'
-import { getGmailAddress, listInboxThreads, getThread, sendGmail, parseAddress } from '../lib/gmail.js'
+import { getGmailAddress, listInboxThreads, listSentThreads, getThread, sendGmail, parseAddress } from '../lib/gmail.js'
 import { getGoogleAuth, setGoogleAuth, clearGoogleAuth, getCompanySettings } from '../db/queries/company.js'
 import { getClientsByCompany } from '../db/queries/clients.js'
 import { AppError } from '../middleware/errorHandler.js'
@@ -79,9 +79,26 @@ async function buildClientEmailMap(companyId: string): Promise<Map<string, { id:
 }
 
 export async function getInbox(companyId: string): Promise<InboxThread[]> {
-  const { refreshToken } = await requireGmail(companyId)
+  const { refreshToken, email } = await requireGmail(companyId)
   const [threads, clientMap] = await Promise.all([
-    listInboxThreads(refreshToken),
+    listInboxThreads(refreshToken, email),
+    buildClientEmailMap(companyId),
+  ])
+
+  return threads.map((thread) => {
+    const client = clientMap.get(thread.fromEmail)
+    return {
+      ...thread,
+      clientId: client?.id ?? null,
+      clientName: client?.name ?? null,
+    }
+  })
+}
+
+export async function getSentEmails(companyId: string): Promise<InboxThread[]> {
+  const { refreshToken, email } = await requireGmail(companyId)
+  const [threads, clientMap] = await Promise.all([
+    listSentThreads(refreshToken, email),
     buildClientEmailMap(companyId),
   ])
 

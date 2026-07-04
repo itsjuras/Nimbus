@@ -56,6 +56,15 @@ export function useInbox(enabled: boolean) {
   })
 }
 
+export function useSentEmails(enabled: boolean) {
+  return useQuery({
+    queryKey: ['gmail', 'sent'] as const,
+    queryFn: () => api.get<InboxThread[]>('/api/v1/emails/sent'),
+    enabled,
+    refetchInterval: 60_000,
+  })
+}
+
 export function useInboxThread(threadId: string | null) {
   return useQuery({
     queryKey: ['gmail', 'thread', threadId] as const,
