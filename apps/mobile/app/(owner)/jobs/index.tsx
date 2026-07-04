@@ -170,9 +170,9 @@ function ScheduleJobModal({ visible, onClose, dark }: { visible: boolean; onClos
           dueAt.setDate(dueAt.getDate() + 30)
           await createInvoice.mutateAsync({
             clientId: selectedClient.id,
-            total,
-            issuedAt: scheduledAt.toISOString(),
-            dueAt: dueAt.toISOString(),
+            currency: 'cad',
+            dueDate: dueAt.toISOString(),
+            lineItems: [{ description: 'Cleaning service', quantity: 1, unitAmountCents: total }],
           })
         }
       }
@@ -589,7 +589,7 @@ function MiniCalendar({
           <Text style={{ color: textColor, fontSize: 20, lineHeight: 22 }}>‹</Text>
         </Pressable>
         <Text style={{ fontSize: 13, fontWeight: '700', color: textColor, fontFamily: 'IBMPlexMono_700Bold' }}>
-          {MONTHS[month].toUpperCase()} {year}
+          {MONTHS[month]!.toUpperCase()} {year}
         </Text>
         <Pressable onPress={() => setCurrent(new Date(year, month + 1, 1))} hitSlop={12} style={{ padding: 6 }}>
           <Text style={{ color: textColor, fontSize: 20, lineHeight: 22 }}>›</Text>

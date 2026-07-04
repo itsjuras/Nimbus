@@ -87,7 +87,7 @@ export default function CrewJobDetailScreen() {
     setCompleteError(null)
     try {
       await completeJob.mutateAsync(id ?? '')
-      router.replace('/(crew)/')
+      router.replace('/(crew)')
     } catch (err) {
       setCompleteError(err instanceof Error ? err.message : 'Failed to complete job')
     }

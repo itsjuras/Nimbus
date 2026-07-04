@@ -3,7 +3,7 @@ import { SidebarToggle } from '../../components/ui/SidebarToggle'
 import { useTheme } from '../../hooks/useTheme'
 
 type Period = 'this_month' | 'last_month' | 'this_year' | 'all_time'
-type Tab = 'expenses' | 'wages'
+type Tab = 'expenses' | 'wages' | 'payroll'
 
 const PERIODS: { value: Period; label: string }[] = [
   { value: 'this_month', label: 'This Month' },
@@ -134,7 +134,7 @@ export default function DemoFinancePage() {
 
       {/* Tabs */}
       <div className="mb-6 flex gap-1 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-1 w-fit">
-        {(['expenses', 'wages'] as Tab[]).map((t) => (
+        {(['expenses', 'wages', 'payroll'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -192,7 +192,7 @@ export default function DemoFinancePage() {
             </div>
           )}
         </div>
-      ) : (
+      ) : tab === 'wages' ? (
         <div className="space-y-2">
           <p className="mb-3 text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal">Wages are logged automatically when jobs are completed.</p>
           {WAGES.map((w) => (
@@ -205,7 +205,140 @@ export default function DemoFinancePage() {
             </div>
           ))}
         </div>
+      ) : (
+        <DemoPayrollTab />
       )}
+    </div>
+  )
+}
+
+// ── Payroll tab (simulated run) ───────────────────────────────────────────────
+
+interface DemoPayrollLine {
+  id: string
+  name: string
+  entries: number
+  totalCents: number
+}
+
+const UNPAID: DemoPayrollLine[] = [
+  { id: 'p1', name: 'James Okafor', entries: 3, totalCents: 42000 },
+  { id: 'p2', name: 'Maria Santos', entries: 4, totalCents: 38400 },
+  { id: 'p3', name: 'Tom Harris',   entries: 2, totalCents: 26400 },
+]
+
+type DemoRunStatus = 'funding' | 'paid'
+
+interface DemoRun {
+  id: string
+  period: string
+  crew: number
+  totalCents: number
+  status: DemoRunStatus
+  ranOn: string
+}
+
+function DemoPayrollTab() {
+  const [confirming, setConfirming] = useState(false)
+  const [lines, setLines] = useState(UNPAID)
+  const [runs, setRuns] = useState<DemoRun[]>([
+    { id: 'r0', period: 'May 1 – May 31, 2026', crew: 3, totalCents: 98200, status: 'paid', ranOn: 'Jun 1, 2026' },
+  ])
+
+  const total = lines.reduce((sum, l) => sum + l.totalCents, 0)
+
+  function runPayroll() {
+    const newRun: DemoRun = {
+      id: `r${Date.now()}`,
+      period: 'Jun 1 – Jun 30, 2026',
+      crew: lines.length,
+      totalCents: total,
+      status: 'funding',
+      ranOn: 'Today',
+    }
+    setRuns((prev) => [newRun, ...prev])
+    setLines([])
+    setConfirming(false)
+    // Simulate the bank debit clearing and transfers going out
+    setTimeout(() => {
+      setRuns((prev) => prev.map((r) => (r.id === newRun.id ? { ...r, status: 'paid' } : r)))
+    }, 3500)
+  }
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Unpaid wages</p>
+        {lines.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 p-10 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400 normal-case tracking-normal">All caught up — every crew member has been paid.</p>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
+            {lines.map((line, i) => (
+              <div key={line.id} className={`flex items-center justify-between gap-4 px-4 py-4 ${i < lines.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 normal-case tracking-normal">{line.name}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal mt-0.5">{line.entries} wage entries</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{fmt(line.totalCents)}</span>
+                  <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Bank ✓</span>
+                </div>
+              </div>
+            ))}
+            <div className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-4 py-3.5 space-y-3">
+              {confirming ? (
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={runPayroll}
+                    className="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white transition-colors"
+                  >
+                    Confirm — debit {fmt(total)}
+                  </button>
+                  <button onClick={() => setConfirming(false)} className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 normal-case tracking-normal">
+                    Cancel
+                  </button>
+                  <p className="w-full text-[11px] text-gray-400 dark:text-gray-500 normal-case tracking-normal">
+                    One click debits your business account and pays every crew member by direct deposit. (Simulated in the demo.)
+                  </p>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirming(true)}
+                  className="rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors"
+                >
+                  Run Payroll · {fmt(total)}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Payroll history</p>
+        <div className="space-y-2">
+          {runs.map((run) => (
+            <div key={run.id} className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 normal-case tracking-normal">{run.period}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal mt-0.5">{run.crew} crew · run {run.ranOn}</p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{fmt(run.totalCents)}</span>
+                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                  run.status === 'paid'
+                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 animate-pulse'
+                }`}>
+                  {run.status === 'paid' ? 'Paid' : 'Debiting bank'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

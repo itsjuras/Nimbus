@@ -64,9 +64,9 @@ function AuthGate() {
     if (!profile) return
 
     if (profile.role === 'owner' || profile.role === 'manager') {
-      if (!inOwner) router.replace('/(owner)/')
+      if (!inOwner) router.replace('/(owner)')
     } else {
-      if (!inCrew) router.replace('/(crew)/')
+      if (!inCrew) router.replace('/(crew)')
     }
   }, [session, profile, loading, segments, router])
 

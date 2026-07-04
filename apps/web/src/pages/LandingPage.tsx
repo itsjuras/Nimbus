@@ -272,7 +272,7 @@ export default function LandingPage() {
                   <span className="text-sm font-bold">Nimbus</span>
                 </div>
                 <div className="p-2 pt-3">
-                  {['Dashboard', 'Jobs', 'Clients', 'Crew', 'Invoices'].map((item, i) => (
+                  {['Dashboard', 'Calendar', 'Jobs', 'Clients', 'Crew', 'Invoices', 'Finance', 'Emails'].map((item, i) => (
                     <div
                       key={item}
                       className={`mb-0.5 rounded-md px-3 py-2 text-xs font-medium ${

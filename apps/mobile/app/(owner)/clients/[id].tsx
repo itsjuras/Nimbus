@@ -444,11 +444,11 @@ function EditClientModal({
     try {
       await updateClient.mutateAsync({
         name: name.trim(),
-        address: address.trim() || undefined,
-        contactName: contactName.trim() || undefined,
-        contactEmail: contactEmail.trim() || undefined,
-        contactPhone: contactPhone.trim() || undefined,
-        notes: notes.trim() || undefined,
+        ...(address.trim() && { address: address.trim() }),
+        ...(contactName.trim() && { contactName: contactName.trim() }),
+        ...(contactEmail.trim() && { contactEmail: contactEmail.trim() }),
+        ...(contactPhone.trim() && { contactPhone: contactPhone.trim() }),
+        ...(notes.trim() && { notes: notes.trim() }),
       })
       onClose()
     } catch (err) {

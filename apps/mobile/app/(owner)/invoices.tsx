@@ -98,13 +98,13 @@ function InvoicePill({
         transform: [{ scale }],
       }}>
         <Text style={{ fontSize: 15, fontWeight: '700', color: textColor, marginBottom: 6 }}>
-          #{invoice.invoiceNumber}
+          #{invoice.id.slice(0, 8).toUpperCase()}
         </Text>
         <Text style={{ fontSize: 13, color: mutedColor, marginBottom: 10 }}>
-          {new Date(invoice.issuedAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+          {new Date(invoice.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
         </Text>
         <Text style={{ fontSize: 20, fontWeight: '700', color: textColor, marginBottom: 10 }}>
-          ${(invoice.total / 100).toFixed(2)}
+          ${(invoice.lineItems.reduce((sum, li) => sum + li.quantity * li.unitAmountCents, 0) / 100).toFixed(2)}
         </Text>
         <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, backgroundColor: chip.bg }}>
           <Text style={{ fontSize: 10, fontWeight: '600', letterSpacing: 1, color: chip.text }}>

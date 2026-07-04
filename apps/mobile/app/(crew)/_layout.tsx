@@ -8,7 +8,7 @@ export default function CrewLayout() {
       tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        contentStyle: { paddingBottom: 100 },
+        sceneStyle: { paddingBottom: 100 },
       }}
     >
       <Tabs.Screen

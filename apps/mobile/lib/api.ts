@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 
 const apiUrl = process.env['EXPO_PUBLIC_API_URL'] as string
 
-async function getAuthHeaders(): Promise<HeadersInit> {
+async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data } = await supabase.auth.getSession()
   const token = data.session?.access_token
   return token ? { Authorization: `Bearer ${token}` } : {}

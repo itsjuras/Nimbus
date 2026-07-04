@@ -228,7 +228,7 @@ export default function AccountScreen() {
           <DirectDepositCard
             profileId={profile.id}
             defaultHolderName={
-              profile.fullName ?? (profile as unknown as { full_name?: string }).full_name ?? ''
+              profile.fullName ?? ''
             }
           />
         )}
