@@ -13,7 +13,40 @@ import { handlePayrollWebhookEvent } from './payrollService.js'
 import type { Invoice, CreateInvoiceRequest } from '@nimbus/shared'
 
 export async function listInvoices(companyId: string): Promise<Invoice[]> {
-  return getInvoicesByCompany(companyId)
+  let invoices = await getInvoicesByCompany(companyId)
+
+  // Webhook fallback: sent invoices can be paid/voided on Stripe's side without
+  // us hearing about it (e.g. local dev without `stripe listen`), so sync them
+  // directly whenever the list is loaded.
+  const pending = invoices.filter((inv) => inv.status === 'sent' && inv.stripeInvoiceId)
+  if (pending.length > 0) {
+    const results = await Promise.all(
+      pending.map(async (inv) => {
+        try {
+          const stripeInvoice = await getStripe().invoices.retrieve(inv.stripeInvoiceId as string)
+          if (stripeInvoice.status === 'paid') {
+            const paidAt = stripeInvoice.status_transitions.paid_at
+            await updateInvoiceStatus(
+              inv.stripeInvoiceId as string,
+              'paid',
+              paidAt ? new Date(paidAt * 1000).toISOString() : new Date().toISOString(),
+            )
+            return true
+          }
+          if (stripeInvoice.status === 'void') {
+            await updateInvoiceStatus(inv.stripeInvoiceId as string, 'void')
+            return true
+          }
+        } catch {
+          // Stripe hiccup — keep our copy, the webhook or next load will catch it
+        }
+        return false
+      }),
+    )
+    if (results.some(Boolean)) invoices = await getInvoicesByCompany(companyId)
+  }
+
+  return invoices
 }
 
 export async function getInvoice(id: string, companyId: string): Promise<Invoice> {
