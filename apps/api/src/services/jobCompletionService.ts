@@ -90,7 +90,7 @@ export async function completeJob(
   const detail = await getJobDetail(jobId, companyId).catch(() => null)
   if (detail) {
     const today = new Date().toISOString().split('T')[0]!
-    await Promise.allSettled(
+    const results = await Promise.allSettled(
       detail.crew
         .filter((m) => m.payType === 'per_job' && m.payRateCents != null && m.payRateCents > 0)
         .map((m) =>
@@ -105,6 +105,12 @@ export async function completeJob(
           }),
         ),
     )
+    // A failed wage insert must not block completion, but it must be visible
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        console.error(`[wages] Failed to auto-log wage for job ${jobId}:`, result.reason)
+      }
+    }
   }
 
   // Send client report and owner notification asynchronously
