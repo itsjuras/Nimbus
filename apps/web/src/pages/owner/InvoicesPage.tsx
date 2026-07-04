@@ -87,7 +87,9 @@ export default function InvoicesPage() {
     await createInvoice.mutateAsync({
       clientId: data.clientId,
       ...(data.jobId ? { jobId: data.jobId } : {}),
-      ...(data.dueDate ? { dueDate: data.dueDate } : {}),
+      // API expects a full ISO datetime; anchor the picked date to local noon
+      // so timezone conversion can't shift it to the wrong day
+      ...(data.dueDate ? { dueDate: new Date(`${data.dueDate}T12:00:00`).toISOString() } : {}),
       currency: data.currency,
       lineItems: data.lineItems.map((item) => ({
         description: item.description,

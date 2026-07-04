@@ -20,8 +20,18 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   })
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error(body?.error?.message ?? `HTTP ${res.status}`)
+    const body = await res.json().catch(() => ({})) as {
+      error?: { message?: string; fields?: Record<string, string[]> }
+    }
+    let message = body?.error?.message ?? `HTTP ${res.status}`
+    // Validation errors carry per-field details — surface them instead of a generic message
+    if (body?.error?.fields) {
+      const details = Object.entries(body.error.fields)
+        .map(([field, issues]) => `${field}: ${issues.join(', ')}`)
+        .join('; ')
+      if (details) message = `${message} — ${details}`
+    }
+    throw new Error(message)
   }
 
   return res.json() as Promise<T>
