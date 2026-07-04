@@ -2,6 +2,9 @@
   "name": "nimbus",
   "private": true,
   "version": "0.0.1",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "concurrently --names api,web --prefix-colors blue,green \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
     "build": "pnpm --filter @nimbus/shared build && pnpm --filter api build && pnpm --filter web build",
