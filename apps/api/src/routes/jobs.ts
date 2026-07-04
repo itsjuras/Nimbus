@@ -169,10 +169,14 @@ jobsRouter.post(
 // POST /api/v1/jobs/:id/complete
 jobsRouter.post('/:id/complete', async (req, res, next) => {
   try {
+    // Owners/managers can complete instantly from any active status;
+    // crew must follow start → checklist → complete
+    const force = req.user.role === 'owner' || req.user.role === 'manager'
     const job = await completeJob(
       String(req.params['id']),
       req.user.companyId,
       req.user.id,
+      { force },
     )
     res.json(job)
   } catch (err) {

@@ -59,3 +59,23 @@ export function useStartJob() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: JOBS_KEY }),
   })
 }
+
+export function useCompleteJob(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.post<Job>(`/api/v1/jobs/${id}/complete`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: JOBS_KEY })
+      queryClient.invalidateQueries({ queryKey: ['wages'] })
+    },
+  })
+}
+
+export function useToggleChecklistItem(jobId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { checklistItemId: string; completed: boolean }) =>
+      api.patch(`/api/v1/jobs/${jobId}/checklist-items`, input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [...JOBS_KEY, jobId] }),
+  })
+}

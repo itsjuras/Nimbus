@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { UpdateJobSchema, type UpdateJobRequest, type JobStatus } from '@nimbus/shared'
-import { useJob, useUpdateJob, useDeleteJob } from '../../hooks/useJobs'
+import { useJob, useUpdateJob, useDeleteJob, useCompleteJob, useToggleChecklistItem } from '../../hooks/useJobs'
 import { useCrewMembers } from '../../hooks/useCrew'
 import { useJobWages, useLogHoursForJob } from '../../hooks/useWages'
 import { useTheme } from '../../hooks/useTheme'
@@ -28,6 +28,8 @@ export default function JobDetailPage() {
   const logHours = useLogHoursForJob(id)
   const updateJob = useUpdateJob(id)
   const deleteJob = useDeleteJob()
+  const completeJob = useCompleteJob(id)
+  const toggleItem = useToggleChecklistItem(id)
 
   const {
     register,
@@ -59,6 +61,14 @@ export default function JobDetailPage() {
     if (!confirm('Cancel this job? This cannot be undone.')) return
     await deleteJob.mutateAsync(id)
     navigate('/owner/jobs')
+  }
+
+  async function onMarkComplete() {
+    const ok = confirm(
+      'Mark this job as completed? This sends the completion report to the client and logs wages for per-job crew.',
+    )
+    if (!ok) return
+    await completeJob.mutateAsync()
   }
 
   if (isLoading) {
@@ -120,12 +130,23 @@ export default function JobDetailPage() {
               </button>
             </>
           ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold uppercase text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200"
-            >
-              Edit job
-            </button>
+            <>
+              {(job.status === 'scheduled' || job.status === 'in_progress') && (
+                <button
+                  onClick={onMarkComplete}
+                  disabled={completeJob.isPending}
+                  className="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-sm font-semibold uppercase text-white disabled:opacity-50"
+                >
+                  {completeJob.isPending ? 'Completing…' : 'Mark complete'}
+                </button>
+              )}
+              <button
+                onClick={() => setIsEditing(true)}
+                className="rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-semibold uppercase text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-200"
+              >
+                Edit job
+              </button>
+            </>
           )}
 
           <SidebarToggle />
@@ -249,32 +270,44 @@ export default function JobDetailPage() {
             </span>
           </h2>
           <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-            {job.checklistItems.map((item) => (
-              <li key={item.id} className="flex items-center gap-3 py-3">
-                <span
-                  className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${
-                    item.completed
-                      ? 'border-gray-900 dark:border-gray-100 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
-                      : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  {item.completed && (
-                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="2,6 5,9 10,3" />
-                    </svg>
-                  )}
-                </span>
-                <span className={`flex-1 text-sm normal-case tracking-normal ${item.completed ? 'text-gray-400 dark:text-gray-600 line-through' : 'text-gray-700 dark:text-gray-300'}`}>
-                  {item.label}
-                </span>
-                {item.requiresPhoto && (
-                  <span className="text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal">Photo required</span>
-                )}
-                {item.photos.length > 0 && (
-                  <span className="text-xs text-gray-600 dark:text-gray-400 normal-case tracking-normal">{item.photos.length} photo(s)</span>
-                )}
-              </li>
-            ))}
+            {job.checklistItems.map((item) => {
+              const canToggle = job.status === 'scheduled' || job.status === 'in_progress'
+              return (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    disabled={!canToggle || toggleItem.isPending}
+                    onClick={() => toggleItem.mutate({ checklistItemId: item.checklistItemId, completed: !item.completed })}
+                    className={`flex w-full items-center gap-3 py-3 text-left ${
+                      canToggle ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 -mx-2 px-2 rounded-lg transition-colors' : 'cursor-default'
+                    }`}
+                  >
+                    <span
+                      className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${
+                        item.completed
+                          ? 'border-gray-900 dark:border-gray-100 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
+                          : 'border-gray-300 dark:border-gray-600'
+                      }`}
+                    >
+                      {item.completed && (
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="2,6 5,9 10,3" />
+                        </svg>
+                      )}
+                    </span>
+                    <span className={`flex-1 text-sm normal-case tracking-normal ${item.completed ? 'text-gray-400 dark:text-gray-600 line-through' : 'text-gray-700 dark:text-gray-300'}`}>
+                      {item.label}
+                    </span>
+                    {item.requiresPhoto && (
+                      <span className="text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal">Photo required</span>
+                    )}
+                    {item.photos.length > 0 && (
+                      <span className="text-xs text-gray-600 dark:text-gray-400 normal-case tracking-normal">{item.photos.length} photo(s)</span>
+                    )}
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         </div>
       )}

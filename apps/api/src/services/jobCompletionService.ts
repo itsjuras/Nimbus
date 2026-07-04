@@ -49,22 +49,31 @@ export async function completeJob(
   jobId: string,
   companyId: string,
   profileId: string,
+  // force: owner/manager path — completes from any active status and skips
+  // the photo requirement. Crew still follow the strict start → complete flow.
+  options: { force?: boolean } = {},
 ): Promise<Job> {
   const job = await getJobById(jobId, companyId)
   if (!job) throw new AppError('JOB_NOT_FOUND', 'No job found with that ID', 404)
 
-  if (job.status !== 'in_progress') {
+  if (job.status === 'completed' || job.status === 'missed') {
+    throw new AppError('INVALID_STATUS', 'Job is already completed or missed', 400)
+  }
+
+  if (!options.force && job.status !== 'in_progress') {
     throw new AppError('INVALID_STATUS', 'Job must be in progress to complete', 400)
   }
 
-  // Validate all photo-required items have at least one photo
-  const status = await getChecklistCompletionStatus(jobId)
-  if (status.missingPhotos.length > 0) {
-    throw new AppError(
-      'MISSING_PHOTOS',
-      `Photos required for: ${status.missingPhotos.join(', ')}`,
-      400,
-    )
+  if (!options.force) {
+    // Validate all photo-required items have at least one photo
+    const status = await getChecklistCompletionStatus(jobId)
+    if (status.missingPhotos.length > 0) {
+      throw new AppError(
+        'MISSING_PHOTOS',
+        `Photos required for: ${status.missingPhotos.join(', ')}`,
+        400,
+      )
+    }
   }
 
   // Update job status
