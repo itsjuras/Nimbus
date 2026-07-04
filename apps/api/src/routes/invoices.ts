@@ -12,11 +12,14 @@ import {
 } from '../services/invoiceService.js'
 import { webhookSecret } from '../lib/stripe.js'
 
+// Webhook lives on its own router: it's mounted at /api/v1 (raw body, no auth),
+// while invoicesRouter is mounted at /api/v1/invoices
+export const stripeWebhookRouter: ExpressRouter = Router()
+
 export const invoicesRouter: ExpressRouter = Router()
 
 // POST /api/v1/webhooks/stripe — raw body, no auth middleware
-// Must be registered before express.json() in index.ts (handled via raw body below)
-invoicesRouter.post(
+stripeWebhookRouter.post(
   '/webhooks/stripe',
   async (req: Request, res: Response, next: NextFunction) => {
     const signature = req.headers['stripe-signature']

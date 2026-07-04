@@ -4,7 +4,7 @@ import { authRouter } from './routes/auth.js'
 import { clientsRouter } from './routes/clients.js'
 import { checklistsRouter } from './routes/checklists.js'
 import { jobsRouter } from './routes/jobs.js'
-import { invoicesRouter } from './routes/invoices.js'
+import { invoicesRouter, stripeWebhookRouter } from './routes/invoices.js'
 import { expensesRouter } from './routes/expenses.js'
 import { wagesRouter } from './routes/wages.js'
 import { financeRouter } from './routes/finance.js'
@@ -47,7 +47,8 @@ app.use('/api/v1/expenses', expensesRouter)
 app.use('/api/v1/wages', wagesRouter)
 app.use('/api/v1/finance', financeRouter)
 app.use('/api/v1/payroll', payrollRouter)
-app.use('/api/v1', invoicesRouter)
+app.use('/api/v1', stripeWebhookRouter)
+app.use('/api/v1/invoices', invoicesRouter)
 app.use('/api/v1', mobileRouter)
 
 app.use(errorHandler)
