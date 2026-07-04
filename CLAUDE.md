@@ -300,7 +300,7 @@ pnpm test             # run all tests
 
 ## Environment variables
 
-See `.env.example` at the root. The API requires `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `JWT_SECRET`. The frontend requires `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and `VITE_API_URL`.
+See `.env.example` at the root — it documents every variable for all three apps (api on Railway, web on Vercel, mobile via Expo). Core API vars: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SITE_URL`, `STRIPE_SECRET_KEY`, `RESEND_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URI`, `CORS_ORIGIN` (comma-separated origins). Frontend: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL`. Production: web is on Vercel at https://www.nimbuscleaning.net; the API deploys to Railway via `railway.json` at the repo root (builds shared + api, runs `node apps/api/dist/index.js`, healthcheck `/health`).
 
 ---
 

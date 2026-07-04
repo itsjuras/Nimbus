@@ -36,7 +36,8 @@ async function insert<T extends Record<string, unknown>>(
 ) {
   const { data, error } = await supabase.from(table).insert(rows).select()
   if (error) throw new Error(`Insert into ${table}: ${error.message}`)
-  return data as T[]
+  // .select() returns every inserted row, so the result is never empty
+  return data as [T, ...T[]]
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────

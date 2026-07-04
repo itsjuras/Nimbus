@@ -37,7 +37,7 @@ const siteUrl = (): string => process.env['SITE_URL'] ?? 'http://localhost:5173'
 // accounts need *a* valid product URL, not necessarily the dev one
 const businessProfileUrl = (): string => {
   const url = siteUrl()
-  return url.startsWith('https://') ? url : 'https://nimbus-app.vercel.app'
+  return url.startsWith('https://') ? url : 'https://www.nimbuscleaning.net'
 }
 
 const CLEANING_SERVICES_MCC = '7349'

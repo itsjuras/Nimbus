@@ -62,7 +62,7 @@ export async function inviteCrew(
   data: InviteCrewRequest,
 ): Promise<InviteCrewResult> {
   // 1. Send the Supabase invite email — creates the auth user in pending state
-  const siteUrl = process.env['SITE_URL'] ?? 'https://nimbus-web-lake.vercel.app'
+  const siteUrl = process.env['SITE_URL'] ?? 'https://www.nimbuscleaning.net'
   const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
     data.email,
     {

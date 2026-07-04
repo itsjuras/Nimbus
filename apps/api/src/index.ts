@@ -18,9 +18,10 @@ import { errorHandler } from './middleware/errorHandler.js'
 const app = express()
 const port = process.env['PORT'] ?? 3000
 
-const allowedOrigin = process.env['CORS_ORIGIN']
+// Comma-separated list, e.g. "https://nimbuscleaning.net,https://www.nimbuscleaning.net"
+const allowedOrigins = process.env['CORS_ORIGIN']?.split(',').map((o) => o.trim())
 app.use(cors({
-  origin: allowedOrigin ?? ((origin, cb) => cb(null, true)),
+  origin: allowedOrigins ?? ((origin, cb) => cb(null, true)),
   credentials: true,
 }))
 
