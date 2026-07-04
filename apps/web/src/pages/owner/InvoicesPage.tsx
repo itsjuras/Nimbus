@@ -1,12 +1,22 @@
 import { useState } from 'react'
 import { z } from 'zod'
 import { SidebarToggle } from '../../components/ui/SidebarToggle'
+import { PickerModal, PickerField } from '../../components/ui/PickerModal'
+import { DatePickerModal } from '../../components/ui/DatePickerModal'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { type InvoiceStatus } from '@nimbus/shared'
 import { useInvoices, useCreateInvoice, useSendInvoice } from '../../hooks/useInvoices'
 import { useClients } from '../../hooks/useClients'
 import { useTheme } from '../../hooks/useTheme'
+
+const CURRENCIES = [
+  { id: 'usd', label: 'USD', sublabel: 'US Dollar' },
+  { id: 'cad', label: 'CAD', sublabel: 'Canadian Dollar' },
+  { id: 'eur', label: 'EUR', sublabel: 'Euro' },
+  { id: 'gbp', label: 'GBP', sublabel: 'British Pound' },
+  { id: 'aud', label: 'AUD', sublabel: 'Australian Dollar' },
+]
 
 // Local form type uses dollar amounts; we convert to cents on submit
 const InvoiceFormSchema = z.object({
@@ -39,6 +49,9 @@ function formatCents(cents: number, currency: string) {
 export default function InvoicesPage() {
   const { theme, toggle } = useTheme()
   const [showForm, setShowForm] = useState(false)
+  const [showClientPicker, setShowClientPicker] = useState(false)
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
   const { data: invoices, isLoading, isError } = useInvoices()
   const { data: clients } = useClients()
   const createInvoice = useCreateInvoice()
@@ -49,6 +62,8 @@ export default function InvoicesPage() {
     handleSubmit,
     control,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<InvoiceFormValues>({
     resolver: zodResolver(InvoiceFormSchema),
@@ -56,6 +71,17 @@ export default function InvoicesPage() {
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'lineItems' })
+
+  const selectedClientId = watch('clientId')
+  const selectedCurrency = watch('currency')
+  const selectedDueDate = watch('dueDate')
+  const lineItemValues = watch('lineItems')
+  const selectedClient = clients?.find((c) => c.id === selectedClientId)
+  const selectedCurrencyOption = CURRENCIES.find((c) => c.id === selectedCurrency)
+  const invoiceTotalCents = lineItemValues.reduce(
+    (sum, item) => sum + Math.round((item.quantity || 0) * (item.unitAmountDollars || 0) * 100),
+    0,
+  )
 
   async function onSubmit(data: InvoiceFormValues) {
     await createInvoice.mutateAsync({
@@ -111,76 +137,141 @@ export default function InvoicesPage() {
           <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">New invoice</h2>
 
           <div className="grid gap-4 sm:grid-cols-3">
-            <Field label="Client *" error={errors.clientId?.message}>
-              <select {...register('clientId')} className={inputClass}>
-                <option value="">Select a client…</option>
-                {clients?.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </Field>
+            <PickerField
+              label="Client *"
+              placeholder="+ Select client"
+              selectedLabel={selectedClient?.name ?? null}
+              selectedSublabel={selectedClient?.contactEmail}
+              onOpen={() => setShowClientPicker(true)}
+              onClear={() => setValue('clientId', '')}
+            />
+            {errors.clientId && <p className={`sm:col-span-3 -mt-3 ${errorText}`}>{errors.clientId.message}</p>}
 
-            <Field label="Due date" error={errors.dueDate?.message}>
-              <input {...register('dueDate')} type="datetime-local" className={inputClass} />
-            </Field>
+            <PickerField
+              label="Due date"
+              placeholder="+ Set due date"
+              selectedLabel={
+                selectedDueDate
+                  ? new Date(`${selectedDueDate}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                  : null
+              }
+              onOpen={() => setShowDatePicker(true)}
+              onClear={() => setValue('dueDate', undefined)}
+            />
 
-            <Field label="Currency" error={errors.currency?.message}>
-              <select {...register('currency')} className={inputClass}>
-                <option value="usd">USD</option>
-                <option value="eur">EUR</option>
-                <option value="gbp">GBP</option>
-                <option value="aud">AUD</option>
-                <option value="cad">CAD</option>
-              </select>
-            </Field>
+            <PickerField
+              label="Currency"
+              placeholder="Select currency"
+              selectedLabel={selectedCurrencyOption?.label ?? null}
+              selectedSublabel={selectedCurrencyOption?.sublabel}
+              onOpen={() => setShowCurrencyPicker(true)}
+            />
           </div>
 
+          <PickerModal
+            open={showClientPicker}
+            onClose={() => setShowClientPicker(false)}
+            title="Select client"
+            options={(clients ?? []).map((c) => ({ id: c.id, label: c.name, sublabel: c.contactEmail }))}
+            onSelect={(id) => setValue('clientId', id, { shouldValidate: true })}
+          />
+
+          <PickerModal
+            open={showCurrencyPicker}
+            onClose={() => setShowCurrencyPicker(false)}
+            title="Select currency"
+            options={CURRENCIES}
+            onSelect={(id) => setValue('currency', id)}
+          />
+
+          <DatePickerModal
+            open={showDatePicker}
+            onClose={() => setShowDatePicker(false)}
+            value={selectedDueDate ?? null}
+            onSelect={(iso) => { setValue('dueDate', iso); setShowDatePicker(false) }}
+            onClear={() => setValue('dueDate', undefined)}
+          />
+
           <div className="mt-6">
-            <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Line items</h3>
-            {errors.lineItems?.root && (
-              <p className="mb-2 text-xs text-gray-600 dark:text-gray-400 normal-case tracking-normal">{errors.lineItems.root.message}</p>
-            )}
-            <div className="space-y-2">
-              {fields.map((field, index) => (
-                <div key={field.id} className="flex gap-3">
-                  <input
-                    {...register(`lineItems.${index}.description`)}
-                    placeholder="Description"
-                    className={`${inputClass} flex-1`}
-                  />
-                  <input
-                    {...register(`lineItems.${index}.quantity`, { valueAsNumber: true })}
-                    type="number"
-                    min="1"
-                    placeholder="Qty"
-                    className={`${inputClass} w-20`}
-                  />
-                  <input
-                    {...register(`lineItems.${index}.unitAmountDollars`, { valueAsNumber: true })}
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    placeholder="Price ($)"
-                    className={`${inputClass} w-36`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => remove(index)}
-                    disabled={fields.length === 1}
-                    className="text-gray-300 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-30"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Line items</h3>
+              <p className="text-xs text-gray-400 dark:text-gray-500 normal-case tracking-normal">What the client is being billed for</p>
             </div>
-            <button
-              type="button"
-              onClick={() => append({ description: '', quantity: 1, unitAmountDollars: 0 })}
-              className="mt-3 text-sm font-medium text-gray-900 dark:text-gray-100 hover:underline normal-case tracking-normal"
-            >
-              + Add line item
-            </button>
+            {errors.lineItems?.root && (
+              <p className={`mb-2 ${errorText}`}>{errors.lineItems.root.message}</p>
+            )}
+
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="hidden sm:grid grid-cols-[1fr_4.5rem_6rem_6rem_1.5rem] gap-3 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                <span>Description</span>
+                <span>Qty</span>
+                <span>Unit price</span>
+                <span className="text-right">Amount</span>
+                <span />
+              </div>
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                {fields.map((field, index) => {
+                  const item = lineItemValues[index]
+                  const lineTotal = Math.round((item?.quantity || 0) * (item?.unitAmountDollars || 0) * 100)
+                  return (
+                    <div key={field.id} className="grid grid-cols-2 sm:grid-cols-[1fr_4.5rem_6rem_6rem_1.5rem] gap-3 p-3 items-center">
+                      <input
+                        {...register(`lineItems.${index}.description`)}
+                        placeholder="e.g. Weekly office cleaning"
+                        className={`${inputClass} col-span-2 sm:col-span-1`}
+                      />
+                      <div>
+                        <p className="mb-1 sm:hidden text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Qty</p>
+                        <input
+                          {...register(`lineItems.${index}.quantity`, { valueAsNumber: true })}
+                          type="number"
+                          min="1"
+                          placeholder="1"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <p className="mb-1 sm:hidden text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Unit price</p>
+                        <input
+                          {...register(`lineItems.${index}.unitAmountDollars`, { valueAsNumber: true })}
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          placeholder="0.00"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between sm:justify-end sm:contents">
+                        <p className="sm:hidden text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Amount</p>
+                        <p className="text-right text-sm font-medium text-gray-700 dark:text-gray-300 normal-case tracking-normal">
+                          {(lineTotal / 100).toLocaleString('en-US', { style: 'currency', currency: (selectedCurrency || 'usd').toUpperCase() })}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => remove(index)}
+                        disabled={fields.length === 1}
+                        className="justify-self-end text-gray-300 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-30"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-3 py-2.5">
+                <button
+                  type="button"
+                  onClick={() => append({ description: '', quantity: 1, unitAmountDollars: 0 })}
+                  className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:underline normal-case tracking-normal"
+                >
+                  + Add line item
+                </button>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 normal-case tracking-normal">
+                  Total: {(invoiceTotalCents / 100).toLocaleString('en-US', { style: 'currency', currency: (selectedCurrency || 'usd').toUpperCase() })}
+                </p>
+              </div>
+            </div>
           </div>
 
           {createInvoice.error && (
@@ -278,24 +369,7 @@ export default function InvoicesPage() {
 
 const inputClass =
   'w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm normal-case tracking-normal text-gray-900 dark:text-gray-100 outline-none transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:border-gray-400 dark:focus:border-gray-500 focus:ring-2 focus:ring-gray-100 dark:focus:ring-gray-800'
-
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string
-  error: string | undefined
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
-      {children}
-      {error && <p className="mt-1 text-xs text-gray-600 dark:text-gray-400 normal-case tracking-normal">{error}</p>}
-    </div>
-  )
-}
+const errorText = 'text-xs text-gray-600 dark:text-gray-400 normal-case tracking-normal'
 
 function SunIcon() {
   return (
